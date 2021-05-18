@@ -36,6 +36,7 @@ func TestLexer(t *testing.T) {
 	x || y
 	struct
 	for
+	100.001!=0.123
 `
 	tests := []struct {
 		expectedType    token.TokenType
@@ -147,6 +148,9 @@ func TestLexer(t *testing.T) {
 		{token.IDENTIFIER, "y"},
 		{token.STRUCT, "struct"},
 		{token.FOR, "for"},
+		{token.NUMBER, "100.001"},
+		{token.NOTEQUALS, "!="},
+		{token.NUMBER, "0.123"},
 		{token.EOF, ""},
 	}
 
