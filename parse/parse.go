@@ -104,6 +104,7 @@ func (p *Parser) paresInfixExprssion(left ast.Expression) ast.Expression {
 	exp.Left = left
 	// 获取当前token的优先级
 	pre := p.curTokenPrecedence()
+	p.forwardToken()
 	exp.Right = p.ParseExpression(pre)
 	return &exp
 }

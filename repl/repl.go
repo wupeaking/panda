@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"panda/eval"
 	"panda/lexer"
 	"panda/parse"
 	"strings"
@@ -24,7 +25,8 @@ func StartREPL(in io.Reader, out io.Writer) {
 		// 	fmt.Fprintf(out, ">> %v\n", tok)
 		// }
 		p := parse.New(lex)
-		ast := p.ParseExpression(parse.LOWEST)
-		fmt.Fprintf(out, ">> %s", ast.String())
+
+		inter := eval.New(p)
+		fmt.Fprintf(out, " %v\n", inter.Eval())
 	}
 }

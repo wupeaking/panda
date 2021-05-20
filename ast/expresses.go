@@ -21,6 +21,10 @@ type InfixExpression struct {
 func (ie *InfixExpression) ExpressionNode()      {}
 func (ie *InfixExpression) TokenLiteral() string { return ie.Token.Literal }
 func (ie *InfixExpression) String() string {
+	// return fmt.Sprintf(`Op(%s)
+	// 	left: %s
+	// 	right: %s
+	// `, ie.Operator, ie.Left.String(), ie.Right.String())
 	var out bytes.Buffer
 	out.WriteString("(")
 	out.WriteString(ie.Left.String())
