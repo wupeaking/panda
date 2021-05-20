@@ -63,8 +63,8 @@ const (
 	ASSIGN     // "="
 	PLUS       // "+"
 	MINUS      // "-"
-	ASTERISK   //  "*"
-	SLASH      // "/"
+	MUL        //  "*"
+	DIV        // "/"
 	MOD        // "%"
 	PLUSPLUS   // ++
 	MINUSMINUS // --
@@ -137,8 +137,8 @@ var TokenTypeLiteral = map[TokenType]string{
 	ASSIGN:     "=",
 	PLUS:       "+",
 	MINUS:      "-",
-	ASTERISK:   "*",
-	SLASH:      "/",
+	MUL:        "*",
+	DIV:        "/",
 	MOD:        "%",
 	PLUSPLUS:   "++",
 	MINUSMINUS: "--",
@@ -206,8 +206,8 @@ var LiteralTokenType = map[string]TokenType{
 	"=":  ASSIGN,
 	"+":  PLUS,
 	"-":  MINUS,
-	"*":  ASTERISK,
-	"/":  SLASH,
+	"*":  MUL,
+	"/":  DIV,
 	"%":  MOD,
 	"++": PLUSPLUS,
 	"--": MINUSMINUS,
