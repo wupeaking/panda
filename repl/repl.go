@@ -26,6 +26,8 @@ func StartREPL(in io.Reader, out io.Writer) {
 		// }
 		p := parse.New(lex)
 
+		// fmt.Fprintf(out, " %v\n",)
+
 		inter := eval.New(p)
 		fmt.Fprintf(out, " %v\n", inter.Eval())
 	}

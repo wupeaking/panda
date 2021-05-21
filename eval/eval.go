@@ -16,12 +16,13 @@ func New(p *parse.Parser) *Interpreter {
 
 func (inter *Interpreter) Eval() interface{} {
 	exp := inter.p.ParseExpression(parse.LOWEST)
+	fmt.Printf("%v\n", exp)
 	return inter.eval(exp)
 }
 func (inter *Interpreter) eval(exp ast.Expression) interface{} {
 	switch express := exp.(type) {
 	case *ast.NumberExpression:
-		fmt.Println(express.Value)
+		// fmt.Println(express.Value)
 		return express.Value
 	case *ast.IdentifierExpression:
 		fmt.Printf("Id(%s)", express.Value)
@@ -36,7 +37,7 @@ func (inter *Interpreter) eval(exp ast.Expression) interface{} {
 		case "-":
 			leftValue := inter.eval(express.Left)
 			rightValue := inter.eval(express.Right)
-			return leftValue.(int64) + rightValue.(int64)
+			return leftValue.(int64) - rightValue.(int64)
 
 		case "*":
 			leftValue := inter.eval(express.Left)
