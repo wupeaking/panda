@@ -30,3 +30,10 @@ func (p *Parser) nextTokenPrecedence() int {
 	}
 	return LOWEST
 }
+
+func (p *Parser) Errors() error {
+	if len(p.errs) != 0 {
+		return p.errs[0]
+	}
+	return nil
+}

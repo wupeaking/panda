@@ -51,6 +51,8 @@ func New(l *lexer.Lexer) *Parser {
 	parse.registerPrefixExpr(token.MINUS, parse.paresPrefixExprssion)
 	// () 将左括号祖册为前缀
 	parse.registerPrefixExpr(token.LPAREN, parse.parseGroupExpression)
+	// ! 作为前缀 但是这里设计! 优先级 是最低的  那么就不能用paresPrefixExprssion 函数 要重新写一个
+	parse.registerPrefixExpr(token.BANG, parse.paresBangExprssion)
 
 	// 中缀
 	// + - * /
@@ -76,6 +78,7 @@ func (p *Parser) registerInfixExpr(ty token.TokenType, fn infixExprParseFunc) {
 func (p *Parser) ParseExpression(precedence int) ast.Expression {
 	prefix := p.prefixExprParseFns[p.curToken.Type]
 	if prefix == nil {
+		p.errs = append(p.errs, fmt.Errorf("不支持的前缀符号: %s", token.TokenType2Name(p.curToken.Type)))
 		return nil
 	}
 	leftExp := prefix()
@@ -124,4 +127,14 @@ func (p *Parser) parseGroupExpression() ast.Expression {
 	}
 	p.forwardToken()
 	return exp
+}
+
+func (p *Parser) paresBangExprssion() ast.Expression {
+	exp := ast.PrefixExpression{}
+	exp.Token = p.curToken
+	exp.Operator = p.curToken.Literal
+	// !操作符 我认为优先级最低
+	p.forwardToken()
+	exp.Right = p.ParseExpression(LOWEST)
+	return &exp
 }
