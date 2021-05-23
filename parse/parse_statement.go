@@ -56,3 +56,24 @@ func (p *Parser) paresVarStatement() *ast.VarStatement {
 		return nil
 	}
 }
+
+func (p *Parser) paresAssginStatement() *ast.AssginStatement {
+	assginStmt := ast.AssginStatement{}
+	idToken := p.curToken
+	p.forwardToken()
+	assginStmt.Name = &ast.IdentifierExpression{
+		Token: idToken,
+		Value: idToken.Literal,
+	}
+	p.forwardToken()
+	assginStmt.Value = p.ParseExpression(LOWEST)
+	p.forwardToken()
+	if !p.curTokenIs(token.SEMI) {
+		p.errs = append(p.errs,
+			fmt.Errorf("期待一个分号在line: %d, pos: %d",
+				p.curToken.Line, p.curToken.Position,
+			),
+		)
+	}
+	return &assginStmt
+}

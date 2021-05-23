@@ -57,10 +57,22 @@ func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error)
 			VarMap[statement.Name.Value] = v
 			return nil, nil
 		}
+	case *ast.AssginStatement:
+		// 判断变量是否存在
+		_, ok := VarMap[statement.Name.Value]
+		if !ok {
+			return nil, fmt.Errorf("变量%s未定义", statement.Name.Value)
+		}
+		v, err := inter.evalExpress(statement.Value)
+		if err != nil {
+			return nil, err
+		}
+		VarMap[statement.Name.Value] = v
+
 	case *ast.ExpressStatement:
 		v, err := inter.evalExpress(statement.Expression)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		fmt.Printf("%v\n", v)
 	default:

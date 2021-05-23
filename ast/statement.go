@@ -60,7 +60,8 @@ func (as *AssginStatement) String() string {
 	var out bytes.Buffer
 	out.WriteString("(")
 	out.WriteString(as.Name.TokenLiteral())
-	out.WriteString(" " + as.Token.Literal + " ")
+	out.WriteString(" = ")
+	out.WriteString(as.Value.String())
 	out.WriteString(")")
 	return out.String()
 }

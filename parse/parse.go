@@ -95,6 +95,11 @@ func (p *Parser) parserASTNode() ast.Node {
 	case token.VAR:
 		// 解析声明表达式
 		return p.paresVarStatement()
+	case token.IDENTIFIER:
+		if p.nextTokenIs(token.ASSIGN) {
+			return p.paresAssginStatement()
+		}
+		fallthrough
 	default:
 		return p.parseExpressStatement()
 		// p.errs = append(p.errs, fmt.Errorf("未知的语句处理 token: %v",

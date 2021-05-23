@@ -17,7 +17,10 @@ func main() {
 		lex := lexer.New(strings.NewReader(`
 		var a = 1 +2*3;
 		a;
-		a = 12;
+		a = a+12;
+		a;
+		var b = 1+a;
+		b*a+1+2;
 		`))
 		p := parse.New(lex)
 		inter := eval.New(p)
