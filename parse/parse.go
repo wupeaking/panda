@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"fmt"
 	"panda/ast"
 	"panda/lexer"
 	"panda/token"
@@ -68,6 +69,30 @@ func (p *Parser) registerPrefixExpr(ty token.TokenType, fn prefixExprParseFunc) 
 
 func (p *Parser) registerInfixExpr(ty token.TokenType, fn infixExprParseFunc) {
 	p.infixExprParseFns[ty] = fn
+}
+
+func (p *Parser) ParserAST() *ast.ProgramAST {
+	root := ast.ProgramAST{NodeTrees: []ast.Node{}}
+	for p.curToken.Type != token.EOF {
+		stmt := p.ParseStament()
+		if stmt == nil {
+			panic(p.errs)
+		}
+		root.NodeTrees = append(root.NodeTrees, stmt)
+		p.forwardToken()
+	}
+	return &root
+}
+
+func (p *Parser) ParseStament() ast.Statement {
+	switch p.curToken.Type {
+	case token.VAR:
+		// 解析声明表达式
+		return p.paresVarStatement()
+	default:
+		p.errs = append(p.errs, fmt.Errorf("未知的语句处理 token: %v"))
+	}
+	return nil
 }
 
 func (p *Parser) ParseExpression(precedence int) ast.Expression {
