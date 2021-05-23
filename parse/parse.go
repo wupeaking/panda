@@ -53,6 +53,8 @@ func New(l *lexer.Lexer) *Parser {
 	parse.registerPrefixExpr(token.LPAREN, parse.parseGroupExpression)
 	// ! 作为前缀 但是这里设计! 优先级 是最低的  那么就不能用paresPrefixExprssion 函数 要重新写一个
 	parse.registerPrefixExpr(token.BANG, parse.paresBangExprssion)
+	// 变量表达式 和解析number类似
+	parse.registerPrefixExpr(token.IDENTIFIER, parse.parseIdent)
 
 	// 中缀
 	// + - * /
@@ -78,7 +80,7 @@ func (p *Parser) registerInfixExpr(ty token.TokenType, fn infixExprParseFunc) {
 func (p *Parser) ParserAST() *ast.ProgramAST {
 	root := ast.ProgramAST{NodeTrees: []ast.Node{}}
 	for p.curToken.Type != token.EOF {
-		stmt := p.ParseStament()
+		stmt := p.parserASTNode()
 		if stmt == nil {
 			panic(p.errs)
 		}
@@ -88,15 +90,16 @@ func (p *Parser) ParserAST() *ast.ProgramAST {
 	return &root
 }
 
-func (p *Parser) ParseStament() ast.Statement {
+func (p *Parser) parserASTNode() ast.Node {
 	switch p.curToken.Type {
 	case token.VAR:
 		// 解析声明表达式
 		return p.paresVarStatement()
 	default:
-		p.errs = append(p.errs, fmt.Errorf("未知的语句处理 token: %v"))
+		return p.ParseExpression(LOWEST)
+		// p.errs = append(p.errs, fmt.Errorf("未知的语句处理 token: %v",
+		// 	token.TokenType2Name(p.curToken.Type)))
 	}
-	return nil
 }
 
 func (p *Parser) ParseExpression(precedence int) ast.Expression {

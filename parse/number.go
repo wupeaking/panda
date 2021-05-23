@@ -25,3 +25,10 @@ func (p *Parser) parseNumber() ast.Expression {
 	exp.Value = value
 	return exp
 }
+
+func (p *Parser) parseIdent() ast.Expression {
+	exp := &ast.IdentifierExpression{}
+	exp.Token = p.curToken
+	exp.Value = p.curToken.Literal
+	return exp
+}

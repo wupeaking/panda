@@ -12,7 +12,9 @@ var debug = false
 func main() {
 	var out io.Reader
 	if debug {
-		out = strings.NewReader("1+(3-2)-(2+3)\n")
+		out = strings.NewReader(`var a = 1+2*3;
+		a;
+		`)
 	} else {
 		out = os.Stdin
 	}
