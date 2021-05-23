@@ -49,6 +49,10 @@ func New(l *lexer.Lexer) *Parser {
 	// + - 可以做前缀
 	parse.registerPrefixExpr(token.PLUS, parse.paresPrefixExprssion)
 	parse.registerPrefixExpr(token.MINUS, parse.paresPrefixExprssion)
+	// () 将左括号祖册为前缀
+	parse.registerPrefixExpr(token.LPAREN, parse.parseGroupExpression)
+	// ! 作为前缀 但是这里设计! 优先级 是最低的  那么就不能用paresPrefixExprssion 函数 要重新写一个
+	parse.registerPrefixExpr(token.BANG, parse.paresBangExprssion)
 
 	// 中缀
 	// + - * /
@@ -98,6 +102,7 @@ func (p *Parser) ParseStament() ast.Statement {
 func (p *Parser) ParseExpression(precedence int) ast.Expression {
 	prefix := p.prefixExprParseFns[p.curToken.Type]
 	if prefix == nil {
+		p.errs = append(p.errs, fmt.Errorf("不支持的前缀符号: %s", token.TokenType2Name(p.curToken.Type)))
 		return nil
 	}
 	leftExp := prefix()
@@ -131,5 +136,29 @@ func (p *Parser) paresInfixExprssion(left ast.Expression) ast.Expression {
 	pre := p.curTokenPrecedence()
 	p.forwardToken()
 	exp.Right = p.ParseExpression(pre)
+	return &exp
+}
+
+func (p *Parser) parseGroupExpression() ast.Expression {
+	// () 解析表达式 直到返回的是)
+	p.forwardToken()
+
+	// 应该是只有到了发现 ) 没有注册的解析函数才会返回
+	exp := p.ParseExpression(LOWEST)
+	if !p.nextTokenIs(token.RPAREN) {
+		p.errs = append(p.errs, fmt.Errorf("期待右括号 结果是: %v", token.TokenType2Name(p.nextToken.Type)))
+		return nil
+	}
+	p.forwardToken()
+	return exp
+}
+
+func (p *Parser) paresBangExprssion() ast.Expression {
+	exp := ast.PrefixExpression{}
+	exp.Token = p.curToken
+	exp.Operator = p.curToken.Literal
+	// !操作符 我认为优先级最低
+	p.forwardToken()
+	exp.Right = p.ParseExpression(LOWEST)
 	return &exp
 }

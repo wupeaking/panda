@@ -12,7 +12,7 @@ func (p *Parser) curTokenIs(ty token.TokenType) bool {
 }
 
 func (p *Parser) nextTokenIs(ty token.TokenType) bool {
-	return p.curToken.Type == ty
+	return p.nextToken.Type == ty
 }
 
 func (p *Parser) curTokenPrecedence() int {
@@ -29,4 +29,11 @@ func (p *Parser) nextTokenPrecedence() int {
 		return pre
 	}
 	return LOWEST
+}
+
+func (p *Parser) Errors() error {
+	if len(p.errs) != 0 {
+		return p.errs[0]
+	}
+	return nil
 }

@@ -219,3 +219,7 @@ type Token struct {
 	Line     int
 	Position int
 }
+
+func TokenType2Name(ty TokenType) string {
+	return TokenTypeLiteral[ty]
+}
