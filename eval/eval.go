@@ -57,6 +57,12 @@ func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error)
 			VarMap[statement.Name.Value] = v
 			return nil, nil
 		}
+	case *ast.ExpressStatement:
+		v, err := inter.evalExpress(statement.Expression)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("%v\n", v)
 	default:
 		return nil, fmt.Errorf("暂时未处理%v 语句", statement)
 	}
@@ -70,7 +76,7 @@ func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 		return express.Value, nil
 	case *ast.IdentifierExpression:
 		// todo:: 去变量表 找到对应的值 返回
-		fmt.Printf("Id(%s)", express.Value)
+		fmt.Printf("Id(%s)\n", express.Value)
 		v, ok := VarMap[express.Value]
 		if !ok {
 			return nil, fmt.Errorf("未定义的变量: %v", express.Value)

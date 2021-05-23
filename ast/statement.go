@@ -10,6 +10,22 @@ type Statement interface {
 	StatementNode()
 }
 
+//ExpressStatement 表达式语句 实际是一个表达式 但是放在单独的语句执行 意思是返回值没有被接收
+type ExpressStatement struct {
+	Token      token.Token
+	Expression Expression
+}
+
+func (es *ExpressStatement) StatementNode()       {}
+func (es *ExpressStatement) TokenLiteral() string { return es.Token.Literal }
+func (es *ExpressStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString("(express ")
+	out.WriteString(es.Expression.String())
+	out.WriteString(")")
+	return out.String()
+}
+
 // VarStatement 变量声明
 type VarStatement struct {
 	Token token.Token

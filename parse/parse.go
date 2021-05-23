@@ -96,10 +96,28 @@ func (p *Parser) parserASTNode() ast.Node {
 		// 解析声明表达式
 		return p.paresVarStatement()
 	default:
-		return p.ParseExpression(LOWEST)
+		return p.parseExpressStatement()
 		// p.errs = append(p.errs, fmt.Errorf("未知的语句处理 token: %v",
 		// 	token.TokenType2Name(p.curToken.Type)))
 	}
+}
+
+func (p *Parser) parseExpressStatement() *ast.ExpressStatement {
+	// 解析一个表达式语句  比如 a; 1+2+3; 这些表达式作为单独的语句 没有被接收
+	startToken := p.curToken
+	exp := p.ParseExpression(LOWEST)
+	p.forwardToken()
+	if !p.curTokenIs(token.SEMI) {
+		p.errs = append(p.errs,
+			fmt.Errorf("期待一个;在line: %d, pos: %d",
+				p.curToken.Line, p.curToken.Position,
+			),
+		)
+		return nil
+	}
+	es := ast.ExpressStatement{Token: startToken, Expression: exp}
+
+	return &es
 }
 
 func (p *Parser) ParseExpression(precedence int) ast.Expression {

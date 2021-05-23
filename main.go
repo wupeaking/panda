@@ -1,23 +1,27 @@
 package main
 
 import (
-	"io"
+	"fmt"
 	"os"
+	"panda/eval"
+	"panda/lexer"
+	"panda/parse"
 	"panda/repl"
 	"strings"
 )
 
-var debug = false
+var debug = true
 
 func main() {
-	var out io.Reader
 	if debug {
-		out = strings.NewReader(`var a = 1+2*3;
+		lex := lexer.New(strings.NewReader(`
+		var a = 1 +2*3;
 		a;
-		`)
-	} else {
-		out = os.Stdin
+		a = 12;
+		`))
+		p := parse.New(lex)
+		inter := eval.New(p)
+		fmt.Fprintf(os.Stdout, " %v\n", inter.Eval())
 	}
-
-	repl.StartREPL(out, os.Stdout)
+	repl.StartREPL(os.Stdin, os.Stdout)
 }
