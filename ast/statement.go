@@ -65,3 +65,21 @@ func (as *AssginStatement) String() string {
 	out.WriteString(")")
 	return out.String()
 }
+
+type BlockStatement struct {
+	Token      token.Token
+	Statements []Node
+}
+
+func (bs *BlockStatement) StatementNode()       {}
+func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
+func (bs *BlockStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString("{")
+	for i := range bs.Statements {
+		out.WriteString(bs.Statements[i].String())
+		out.WriteString("\n")
+	}
+	out.WriteString("}")
+	return out.String()
+}

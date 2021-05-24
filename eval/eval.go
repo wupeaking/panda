@@ -19,7 +19,7 @@ func (inter *Interpreter) Eval() interface{} {
 	if err := inter.p.Errors(); err != nil {
 		panic(err)
 	}
-	fmt.Printf("%v\n", astTree)
+	// fmt.Printf("%v\n", astTree)
 	return inter.evalProgram(astTree)
 }
 
@@ -88,7 +88,7 @@ func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 		return express.Value, nil
 	case *ast.IdentifierExpression:
 		// todo:: 去变量表 找到对应的值 返回
-		fmt.Printf("Id(%s)\n", express.Value)
+		// fmt.Printf("Id(%s)\n", express.Value)
 		v, ok := VarMap[express.Value]
 		if !ok {
 			return nil, fmt.Errorf("未定义的变量: %v", express.Value)

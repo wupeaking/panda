@@ -21,6 +21,10 @@ func main() {
 		a;
 		var b = 1+a;
 		b*a+1+2;
+		var call = function(a, b, c, d) {
+			a = b+1;
+			c = b;
+		};
 		`))
 		p := parse.New(lex)
 		inter := eval.New(p)
@@ -28,3 +32,7 @@ func main() {
 	}
 	repl.StartREPL(os.Stdin, os.Stdout)
 }
+
+/*
+
+ */

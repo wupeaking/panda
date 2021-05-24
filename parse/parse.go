@@ -55,7 +55,8 @@ func New(l *lexer.Lexer) *Parser {
 	parse.registerPrefixExpr(token.BANG, parse.paresBangExprssion)
 	// 变量表达式 和解析number类似
 	parse.registerPrefixExpr(token.IDENTIFIER, parse.parseIdent)
-
+	// 匿名函数表达式
+	parse.registerPrefixExpr(token.FUNC, parse.paresAnonymousFunctionExprssion)
 	// 中缀
 	// + - * /
 	parse.registerInfixExpr(token.PLUS, parse.paresInfixExprssion)
