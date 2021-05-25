@@ -7,11 +7,12 @@ import (
 )
 
 type Interpreter struct {
-	p *parse.Parser
+	p            *parse.Parser
+	scopeManager *ScopeManager
 }
 
 func New(p *parse.Parser) *Interpreter {
-	return &Interpreter{p}
+	return &Interpreter{p: p, scopeManager: NewScopeManager()}
 }
 
 func (inter *Interpreter) Eval() interface{} {
@@ -54,20 +55,22 @@ func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error)
 			if err != nil {
 				return nil, err
 			}
-			VarMap[statement.Name.Value] = v
+			inter.scopeManager.SetValue(statement.Name.Value, v, true)
+			// VarMap[statement.Name.Value] = v
 			return nil, nil
 		}
 	case *ast.AssginStatement:
 		// 判断变量是否存在
-		_, ok := VarMap[statement.Name.Value]
-		if !ok {
+		// _, ok := VarMap[statement.Name.Value]
+		if !inter.scopeManager.VarExists(statement.Name.Value) {
 			return nil, fmt.Errorf("变量%s未定义", statement.Name.Value)
 		}
 		v, err := inter.evalExpress(statement.Value)
 		if err != nil {
 			return nil, err
 		}
-		VarMap[statement.Name.Value] = v
+		//VarMap[statement.Name.Value] = v
+		inter.scopeManager.SetValue(statement.Name.Value, v, false)
 
 	case *ast.ExpressStatement:
 		v, err := inter.evalExpress(statement.Expression)
@@ -147,4 +150,9 @@ func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 		return nil, fmt.Errorf("未识别的表达式: %v", express)
 	}
 	return nil, nil
+}
+
+func (inter *Interpreter) evalFunctionCall(funcNode ast.Node) (interface{}, bool) {
+	// 函数调用可以是匿名函数表达式的调用 也可以是函数语句调用
+	return nil, false
 }
