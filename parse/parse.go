@@ -49,7 +49,7 @@ func New(l *lexer.Lexer) *Parser {
 	// + - 可以做前缀
 	parse.registerPrefixExpr(token.PLUS, parse.paresPrefixExprssion)
 	parse.registerPrefixExpr(token.MINUS, parse.paresPrefixExprssion)
-	// () 将左括号祖册为前缀
+	// () 将左括号为前缀
 	parse.registerPrefixExpr(token.LPAREN, parse.parseGroupExpression)
 	// ! 作为前缀 但是这里设计! 优先级 是最低的  那么就不能用paresPrefixExprssion 函数 要重新写一个
 	parse.registerPrefixExpr(token.BANG, parse.paresBangExprssion)
@@ -64,6 +64,7 @@ func New(l *lexer.Lexer) *Parser {
 	parse.registerInfixExpr(token.MUL, parse.paresInfixExprssion)
 	parse.registerInfixExpr(token.DIV, parse.paresInfixExprssion)
 	parse.registerInfixExpr(token.MOD, parse.paresInfixExprssion)
+	// ( 说明是函数调用
 
 	parse.forwardToken()
 	parse.forwardToken()

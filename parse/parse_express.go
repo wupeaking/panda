@@ -67,3 +67,35 @@ func (p *Parser) paresAnonymousFunctionExprssion() ast.Expression {
 
 	return &exp
 }
+
+func (p *Parser) paresCallFunctionExprssion(funcName ast.Expression) ast.Expression {
+	exp := ast.CallExpression{}
+	exp.FuncName = funcName
+	exp.Token = p.curToken // (
+	p.forwardToken()       // exp1, exp2, exp3
+
+	args := make([]ast.Expression, 0)
+	for {
+		argExp := p.ParseExpression(LOWEST)
+		if argExp == nil {
+			return nil
+		}
+		args = append(args, argExp)
+
+		if p.nextTokenIs(token.RPAREN) {
+			break
+		}
+		if p.nextTokenIs(token.COMMA) {
+			p.forwardToken() // ,
+			p.forwardToken() // next exp
+			continue
+		} else {
+			p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待,或者) 实际是%s ",
+				p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.curToken.Type)))
+			return nil
+		}
+	}
+	exp.Arguments = args
+	p.forwardToken() // )
+	return &exp
+}
