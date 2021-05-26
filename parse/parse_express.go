@@ -16,9 +16,14 @@ func (p *Parser) paresAnonymousFunctionExprssion() ast.Expression {
 		return nil
 	}
 	p.forwardToken() // (
-	p.forwardToken() // a, b, c
+	p.forwardToken() // a, b, c 或者)
 
 	args := make([]ast.Expression, 0)
+	if p.curTokenIs(token.RPAREN) {
+		exp.Args = args
+		goto parseBody
+	}
+
 	for {
 		argExp := p.ParseExpression(LOWEST)
 		if argExp == nil {
@@ -41,6 +46,8 @@ func (p *Parser) paresAnonymousFunctionExprssion() ast.Expression {
 	}
 	exp.Args = args
 	p.forwardToken() // )
+
+parseBody:
 	if !p.nextTokenIs(token.LBRACE) {
 		p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待{ 实际是%s ",
 			p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.curToken.Type)))
@@ -68,13 +75,30 @@ func (p *Parser) paresAnonymousFunctionExprssion() ast.Expression {
 	return &exp
 }
 
+// paresCallFunctionExprssion 解析函数调用  add() add()()()
 func (p *Parser) paresCallFunctionExprssion(funcName ast.Expression) ast.Expression {
+	exp := p.paresCallFunctionExprssionHelper(funcName)
+	for p.nextTokenIs(token.LPAREN) {
+		p.forwardToken()
+		exp = p.paresCallFunctionExprssionHelper(exp)
+	}
+	return exp
+}
+
+func (p *Parser) paresCallFunctionExprssionHelper(funcName ast.Expression) ast.Expression {
 	exp := ast.CallExpression{}
+	// 可能的表达式是 add()
+	// 也可能是 addFn()() 所以funcName 也能的值是id表达式和调用表达式
 	exp.FuncName = funcName
 	exp.Token = p.curToken // (
-	p.forwardToken()       // exp1, exp2, exp3
+	p.forwardToken()       // exp1, exp2, exp3 或者 )
 
 	args := make([]ast.Expression, 0)
+	if p.curTokenIs(token.RPAREN) {
+		exp.Arguments = args
+		return &exp
+	}
+
 	for {
 		argExp := p.ParseExpression(LOWEST)
 		if argExp == nil {
@@ -97,5 +121,6 @@ func (p *Parser) paresCallFunctionExprssion(funcName ast.Expression) ast.Express
 	}
 	exp.Arguments = args
 	p.forwardToken() // )
+
 	return &exp
 }

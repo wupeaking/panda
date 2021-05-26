@@ -13,14 +13,17 @@ const (
 	SUM    // + -
 	MUL    // / * %
 	PREFIX // 前缀表达式的优先级
+	CALL   // 当进入前缀表达式时  要保证调用表达式比他级别高 比如 +add() 如果不设置这个级别 会返回 +add 而不是+add()
 )
 
+// 其实只有中缀的情况 才会需要设置优先级
 var tokenPrecedenceMap = map[token.TokenType]int{
-	token.PLUS:  SUM,
-	token.MINUS: SUM,
-	token.MUL:   MUL,
-	token.DIV:   MUL,
-	token.MOD:   MUL,
+	token.PLUS:   SUM,
+	token.MINUS:  SUM,
+	token.MUL:    MUL,
+	token.DIV:    MUL,
+	token.MOD:    MUL,
+	token.LPAREN: CALL,
 }
 
 type Parser struct {
@@ -49,7 +52,7 @@ func New(l *lexer.Lexer) *Parser {
 	// + - 可以做前缀
 	parse.registerPrefixExpr(token.PLUS, parse.paresPrefixExprssion)
 	parse.registerPrefixExpr(token.MINUS, parse.paresPrefixExprssion)
-	// () 将左括号为前缀
+	// () 将左括号为前缀 (做前缀
 	parse.registerPrefixExpr(token.LPAREN, parse.parseGroupExpression)
 	// ! 作为前缀 但是这里设计! 优先级 是最低的  那么就不能用paresPrefixExprssion 函数 要重新写一个
 	parse.registerPrefixExpr(token.BANG, parse.paresBangExprssion)
@@ -64,7 +67,9 @@ func New(l *lexer.Lexer) *Parser {
 	parse.registerInfixExpr(token.MUL, parse.paresInfixExprssion)
 	parse.registerInfixExpr(token.DIV, parse.paresInfixExprssion)
 	parse.registerInfixExpr(token.MOD, parse.paresInfixExprssion)
-	// ( 说明是函数调用
+	// ( 说明是函数调用 当做中缀表达式的时候 注意 优先级  如果调用到中缀 说明前面肯定有其他前缀表达式 这个时候 他应该是比前缀表达式的优先级还高
+	// 否则 对于+add() 会处理错误
+	parse.registerInfixExpr(token.LPAREN, parse.paresCallFunctionExprssion)
 
 	parse.forwardToken()
 	parse.forwardToken()
