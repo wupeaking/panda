@@ -101,10 +101,14 @@ func (p *Parser) parserASTNode() ast.Node {
 	switch p.curToken.Type {
 	case token.VAR:
 		// 解析声明表达式
-		return p.paresVarStatement()
+		return p.parseVarStatement()
+	case token.RETURN:
+		// return 语句
+		return p.parseReturnStatement()
+
 	case token.IDENTIFIER:
 		if p.nextTokenIs(token.ASSIGN) {
-			return p.paresAssginStatement()
+			return p.parseAssginStatement()
 		}
 		fallthrough
 	default:

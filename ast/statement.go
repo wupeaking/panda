@@ -83,3 +83,18 @@ func (bs *BlockStatement) String() string {
 	out.WriteString("}")
 	return out.String()
 }
+
+type ReturnStatement struct {
+	Token token.Token
+	Value Expression
+}
+
+func (rs *ReturnStatement) StatementNode()       {}
+func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }
+func (rs *ReturnStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString("return ")
+	out.WriteString(rs.Value.String())
+	out.WriteString(" ;")
+	return out.String()
+}

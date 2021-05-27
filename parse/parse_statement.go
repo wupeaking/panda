@@ -6,7 +6,7 @@ import (
 	"panda/token"
 )
 
-func (p *Parser) paresVarStatement() *ast.VarStatement {
+func (p *Parser) parseVarStatement() *ast.VarStatement {
 	varStmt := ast.VarStatement{}
 	varToken := p.curToken
 	p.forwardToken()
@@ -57,7 +57,7 @@ func (p *Parser) paresVarStatement() *ast.VarStatement {
 	}
 }
 
-func (p *Parser) paresAssginStatement() *ast.AssginStatement {
+func (p *Parser) parseAssginStatement() *ast.AssginStatement {
 	assginStmt := ast.AssginStatement{}
 	idToken := p.curToken
 	p.forwardToken()
@@ -76,4 +76,20 @@ func (p *Parser) paresAssginStatement() *ast.AssginStatement {
 		)
 	}
 	return &assginStmt
+}
+
+func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
+	retStmt := ast.ReturnStatement{}
+	retStmt.Token = p.curToken
+	p.forwardToken()
+	retStmt.Value = p.ParseExpression(LOWEST)
+	p.forwardToken()
+	if !p.curTokenIs(token.SEMI) {
+		p.errs = append(p.errs,
+			fmt.Errorf("期待一个分号在line: %d, pos: %d",
+				p.curToken.Line, p.curToken.Position,
+			),
+		)
+	}
+	return &retStmt
 }
