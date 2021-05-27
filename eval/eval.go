@@ -1,9 +1,14 @@
 package eval
 
 import (
+	"errors"
 	"fmt"
 	"panda/ast"
 	"panda/parse"
+)
+
+var (
+	returnError = errors.New("exit")
 )
 
 type Interpreter struct {
@@ -28,7 +33,11 @@ func (inter *Interpreter) evalProgram(astTree *ast.ProgramAST) interface{} {
 	for i := range astTree.NodeTrees {
 		switch x := astTree.NodeTrees[i].(type) {
 		case ast.Statement:
-			_, err := inter.evalStatement(x)
+			v, err := inter.evalStatement(x)
+			if err == returnError {
+				return v
+			}
+
 			if err != nil {
 				panic(err)
 			}
@@ -78,6 +87,15 @@ func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error)
 			return nil, err
 		}
 		fmt.Printf("%v\n", v)
+
+	case *ast.ReturnStatement:
+		// 返回语句
+		v, err := inter.evalExpress(statement.Value)
+		if err != nil {
+			return nil, err
+		}
+		return v, returnError
+
 	default:
 		return nil, fmt.Errorf("暂时未处理%v 语句", statement)
 	}
@@ -146,13 +164,32 @@ func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 				return nil, fmt.Errorf("!运算不支持此类型的值: %v", x)
 			}
 		}
+
+	case *ast.AnonymousFuncExpression:
+		// 返回匿名函数表达式
+		return express, nil
+
 	default:
 		return nil, fmt.Errorf("未识别的表达式: %v", express)
 	}
 	return nil, nil
 }
 
-func (inter *Interpreter) evalFunctionCall(funcNode ast.Node) (interface{}, bool) {
+func (inter *Interpreter) evalFunctionCall(funcNode *ast.CallExpression) (interface{}, bool, error) {
 	// 函数调用可以是匿名函数表达式的调用 也可以是函数语句调用
+	funcExp, err := inter.evalExpress(funcNode.FuncName)
+	if err != nil {
+		return nil, false, err
+	}
+
+	anonyFunc, ok := funcExp.(*ast.AnonymousFuncExpression)
+	if !ok {
+		return nil, false, fmt.Errorf("%v不是函数", funcNode.FuncName)
+	}
+	if len(anonyFunc.Args) != len(funcNode.Arguments) {
+		return nil, false, fmt.Errorf("实参和形参数量不一致")
+	}
+	//anonyFunc.FuncBody.Statements
+
 	return nil, false
 }
