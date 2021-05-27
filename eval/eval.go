@@ -30,26 +30,34 @@ func (inter *Interpreter) Eval() interface{} {
 }
 
 func (inter *Interpreter) evalProgram(astTree *ast.ProgramAST) interface{} {
-	for i := range astTree.NodeTrees {
-		switch x := astTree.NodeTrees[i].(type) {
+	ret, err := inter.evalASTNodes(astTree.NodeTrees)
+	if err != nil {
+		panic(err)
+	}
+	return ret
+}
+
+func (inter *Interpreter) evalASTNodes(nodes []ast.Node) (interface{}, error) {
+	for i := range nodes {
+		switch x := nodes[i].(type) {
 		case ast.Statement:
 			v, err := inter.evalStatement(x)
 			if err == returnError {
-				return v
+				return v, nil
+			}
+			if err != nil {
+				return nil, err
 			}
 
-			if err != nil {
-				panic(err)
-			}
 		case ast.Expression:
 			v, err := inter.evalExpress(x)
 			if err != nil {
-				panic(err)
+				return nil, err
 			}
 			fmt.Printf("%v\n", v)
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 var VarMap = map[string]interface{}{}
@@ -67,6 +75,8 @@ func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error)
 			inter.scopeManager.SetValue(statement.Name.Value, v, true)
 			// VarMap[statement.Name.Value] = v
 			return nil, nil
+		} else {
+			inter.scopeManager.SetValue(statement.Name.Value, nil, true)
 		}
 	case *ast.AssginStatement:
 		// 判断变量是否存在
@@ -110,8 +120,9 @@ func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 	case *ast.IdentifierExpression:
 		// todo:: 去变量表 找到对应的值 返回
 		// fmt.Printf("Id(%s)\n", express.Value)
-		v, ok := VarMap[express.Value]
-		if !ok {
+		v, scope := inter.scopeManager.GetValue(express.Value)
+		// v, ok := VarMap[express.Value]
+		if scope == nil {
 			return nil, fmt.Errorf("未定义的变量: %v", express.Value)
 		}
 		return v, nil
@@ -166,8 +177,14 @@ func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 		}
 
 	case *ast.AnonymousFuncExpression:
+		// add(a, b){return a+b;};
 		// 返回匿名函数表达式
 		return express, nil
+
+	case *ast.CallExpression:
+		// add(1, 2)
+		v, _, err := inter.evalFunctionCall(express)
+		return v, err
 
 	default:
 		return nil, fmt.Errorf("未识别的表达式: %v", express)
@@ -189,7 +206,22 @@ func (inter *Interpreter) evalFunctionCall(funcNode *ast.CallExpression) (interf
 	if len(anonyFunc.Args) != len(funcNode.Arguments) {
 		return nil, false, fmt.Errorf("实参和形参数量不一致")
 	}
-	//anonyFunc.FuncBody.Statements
+	inter.scopeManager.Push(FuncScope)
+	defer inter.scopeManager.Pop()
 
-	return nil, false
+	// 进行传值
+	for i := range anonyFunc.Args {
+		arg, ok := anonyFunc.Args[i].(*ast.IdentifierExpression)
+		if !ok {
+			return nil, false, fmt.Errorf("%v 参数类型错误", funcNode.FuncName)
+		}
+		argValue, err := inter.evalExpress(funcNode.Arguments[i])
+		if err != nil {
+			return nil, false, err
+		}
+		inter.scopeManager.SetValue(arg.Value, argValue, true)
+	}
+	//anonyFunc.FuncBody.Statements
+	v, err := inter.evalASTNodes(anonyFunc.FuncBody.Statements)
+	return v, true, err
 }

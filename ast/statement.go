@@ -98,3 +98,5 @@ func (rs *ReturnStatement) String() string {
 	out.WriteString(" ;")
 	return out.String()
 }
+
+// todo:: 函数语句

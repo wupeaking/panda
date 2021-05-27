@@ -88,10 +88,7 @@ func (sm *ScopeManager) SetValue(name string, value interface{}, newVar bool) bo
 
 func (sm *ScopeManager) VarExists(name string) bool {
 	_, scope := sm.GetValue(name)
-	if scope != nil {
-		return false
-	}
-	return true
+	return scope != nil
 }
 
 type Scope struct {
