@@ -89,7 +89,10 @@ func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error)
 			return nil, err
 		}
 		//VarMap[statement.Name.Value] = v
-		inter.scopeManager.SetValue(statement.Name.Value, v, false)
+		ok := inter.scopeManager.SetValue(statement.Name.Value, v, false)
+		if !ok {
+			return nil, fmt.Errorf("变量%s不存在", statement.Name.Value)
+		}
 
 	case *ast.ExpressStatement:
 		v, err := inter.evalExpress(statement.Expression)

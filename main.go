@@ -27,7 +27,15 @@ func main() {
 		var callb = function() {
 			return 1+2+3;
 		};
+		var callc = function() {
+			return function(a, b,c) {
+				return a*b*c;
+			};
+		};
+
 		calla(1,1,1,1);
+		callb();
+		callc()(2,2,3);
 		`))
 		p := parse.New(lex)
 		inter := eval.New(p)
@@ -37,5 +45,14 @@ func main() {
 }
 
 /*
-
- */
+	a;
+	var b = 1+a;
+	b*a+1+2;
+	var calla = function(a, b, c, d) {
+		return a+b+c+d;
+	};
+	var callb = function() {
+		return 1+2+3;
+	};
+	calla(1,1,1,1);
+*/

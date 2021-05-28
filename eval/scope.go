@@ -77,7 +77,7 @@ func (sm *ScopeManager) SetValue(name string, value interface{}, newVar bool) bo
 
 	if !newVar {
 		_, scope := sm.GetValue(name)
-		if scope != nil {
+		if scope == nil {
 			return false
 		}
 		scope.Container[name] = value
