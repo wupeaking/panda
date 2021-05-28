@@ -36,6 +36,7 @@ func main() {
 		calla(1,1,1,1);
 		callb();
 		callc()(2,2,3);
+		a+callc()(2,2,3);
 		`))
 		p := parse.New(lex)
 		inter := eval.New(p)
@@ -43,6 +44,8 @@ func main() {
 	}
 	repl.StartREPL(os.Stdin, os.Stdout)
 }
+
+// todo:: a+callc()(2,2,3); 运算有问题 猜测是作用域导致
 
 /*
 	a;
