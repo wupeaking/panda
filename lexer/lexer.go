@@ -22,9 +22,19 @@ func (lexer *Lexer) NextToken() token.Token {
 	lexer.skipWhitespace()
 	ch := lexer.Next()
 	switch ch {
-	case '(', ')', '{', '}', '[', ']', ',', ';', ':', '.', '*', '/', '%':
+	case '(', ')', '{', '}', '[', ']', ',', ';', ':', '.', '*', '%':
 		tokenType := token.LiteralTokenType[string(ch)]
 		return token.Token{Type: tokenType, Literal: string(ch), Line: lexer.Pos().Line, Position: lexer.Pos().Offset}
+
+	case '/':
+		// 考虑是否为注释
+		if lexer.Peek() == '/' {
+			lexer.skipComments()
+			return lexer.NextToken()
+		} else {
+			tokenType := token.LiteralTokenType[string(ch)]
+			return token.Token{Type: tokenType, Literal: string(ch), Line: lexer.Pos().Line, Position: lexer.Pos().Offset}
+		}
 
 	case '=': // 赋值 或者 等于
 		if lexer.Peek() == '=' {
@@ -211,6 +221,29 @@ func (lexer *Lexer) skipWhitespace() {
 			lexer.Next()
 		} else {
 			break
+		}
+	}
+}
+
+// skipComments 跳过注释
+func (lexer *Lexer) skipComments() {
+	// // 直到 \n 或者\n\r
+	if lexer.Peek() == '/' {
+		for {
+			ch := lexer.Peek()
+			if ch == scanner.EOF {
+				break
+			}
+			if ch != '\n' {
+				lexer.Next()
+				continue
+			} else {
+				lexer.Next() // eat \n
+				if lexer.Peek() == '\r' {
+					lexer.Next() // eat \r
+				}
+				break
+			}
 		}
 	}
 }

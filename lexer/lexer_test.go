@@ -37,6 +37,7 @@ func TestLexer(t *testing.T) {
 	struct
 	for
 	100.001!=0.123
+	///.. aaaaa 
 `
 	tests := []struct {
 		expectedType    token.TokenType
