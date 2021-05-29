@@ -38,7 +38,7 @@ func (sm *ScopeManager) Push(scopeType ScopeType) {
 
 func (sm *ScopeManager) Pop() {
 	parent := sm.curScope.Parent
-	if parent.Type == GlobalScope {
+	if sm.curScope.Type == GlobalScope {
 		return
 	}
 	sm.curScope = parent
