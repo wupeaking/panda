@@ -2,6 +2,7 @@ package ast
 
 import (
 	"bytes"
+	"fmt"
 	"panda/token"
 )
 
@@ -99,4 +100,26 @@ func (rs *ReturnStatement) String() string {
 	return out.String()
 }
 
-// todo:: 函数语句
+// FunctionStatement  函数声明
+type FunctionStatement struct {
+	Token      token.Token
+	Name       *IdentifierExpression
+	Args       []Expression // 应该是变量表达式
+	ReturnType Statement    // 保留 暂时设计的函数不需要声明返回类型
+	FuncBody   *BlockStatement
+}
+
+func (fs *FunctionStatement) StatementNode()       {}
+func (fs *FunctionStatement) TokenLiteral() string { return fs.Token.Literal }
+func (fs *FunctionStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString(fmt.Sprintf("< function %s(", fs.Name.Value))
+	for i := range fs.Args {
+		out.WriteString(fs.Args[i].String())
+		out.WriteString(", ")
+	}
+	out.WriteString(") ")
+	out.WriteString(fs.FuncBody.String())
+	out.WriteString(" >")
+	return out.String()
+}

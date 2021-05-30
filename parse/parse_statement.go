@@ -93,3 +93,88 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	}
 	return &retStmt
 }
+
+func (p *Parser) parseFunctionStatement() *ast.FunctionStatement {
+	/*
+		function aaa() {
+
+		}
+	*/
+	exp := ast.FunctionStatement{}
+	exp.Token = p.curToken // function
+	if !p.nextTokenIs(token.IDENTIFIER) {
+		p.errs = append(p.errs,
+			fmt.Errorf("line: %d, pos: %d 期待function name 实际是%s ",
+				p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.curToken.Type)))
+		return nil
+	}
+	p.forwardToken() // name
+	exp.Name = &ast.IdentifierExpression{
+		Token: p.curToken,
+		Value: p.curToken.Literal,
+	}
+
+	if !p.nextTokenIs(token.LPAREN) {
+		p.errs = append(p.errs,
+			fmt.Errorf("line: %d, pos: %d 期待( 实际是%s ",
+				p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.curToken.Type)))
+		return nil
+	}
+	p.forwardToken() // (
+	p.forwardToken() // a, b, c 或者)
+
+	args := make([]ast.Expression, 0)
+	if p.curTokenIs(token.RPAREN) {
+		exp.Args = args
+		goto parseBody
+	}
+
+	for {
+		argExp := p.ParseExpression(LOWEST)
+		if argExp == nil {
+			return nil
+		}
+		args = append(args, argExp)
+
+		if p.nextTokenIs(token.RPAREN) {
+			break
+		}
+		if p.nextTokenIs(token.COMMA) {
+			p.forwardToken() // ,
+			p.forwardToken() //
+			continue
+		} else {
+			p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待,或者) 实际是%s ",
+				p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.curToken.Type)))
+			return nil
+		}
+	}
+	exp.Args = args
+	p.forwardToken() // )
+
+parseBody:
+	if !p.nextTokenIs(token.LBRACE) {
+		p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待{ 实际是%s ",
+			p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.curToken.Type)))
+		return nil
+	}
+	exp.FuncBody = &ast.BlockStatement{Token: p.curToken}
+	p.forwardToken() // {
+
+	p.forwardToken()
+	nodes := make([]ast.Node, 0)
+	for {
+		node := p.parserASTNode()
+		if node == nil {
+			return nil
+		}
+		nodes = append(nodes, node)
+		if p.nextTokenIs(token.RBRACE) {
+			break
+		}
+		p.forwardToken()
+	}
+	exp.FuncBody.Statements = nodes
+	// p.forwardToken() 函数声明结尾没有; 只有}
+	return &exp
+}

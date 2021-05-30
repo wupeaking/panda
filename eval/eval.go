@@ -109,6 +109,9 @@ func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error)
 		}
 		return v, returnError
 
+	case *ast.FunctionStatement:
+		//todo:: 函数声明
+
 	default:
 		return nil, fmt.Errorf("暂时未处理%v 语句", statement)
 	}

@@ -106,6 +106,10 @@ func (p *Parser) parserASTNode() ast.Node {
 		// return 语句
 		return p.parseReturnStatement()
 
+	case token.FUNC:
+		// 函数声明
+		return p.parseFunctionStatement()
+
 	case token.IDENTIFIER:
 		if p.nextTokenIs(token.ASSIGN) {
 			return p.parseAssginStatement()
