@@ -175,6 +175,6 @@ parseBody:
 		p.forwardToken()
 	}
 	exp.FuncBody.Statements = nodes
-	// p.forwardToken() 函数声明结尾没有; 只有}
+	p.forwardToken() // }
 	return &exp
 }

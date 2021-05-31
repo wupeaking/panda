@@ -110,7 +110,18 @@ func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error)
 		return v, returnError
 
 	case *ast.FunctionStatement:
-		//todo:: 函数声明
+		//将其转化为匿名函数表达式 放入变量池中
+		funcName := statement.Name.Value
+		anonFunc := ast.AnonymousFuncExpression{}
+		anonFunc.Token = statement.Token
+		anonFunc.Args = statement.Args
+		anonFunc.ReturnType = statement.ReturnType
+		anonFunc.FuncBody = statement.FuncBody
+		ok := inter.scopeManager.SetValue(funcName, &anonFunc, true)
+		if !ok {
+			return nil, fmt.Errorf("变量%s不存在", funcName)
+		}
+		return nil, nil
 
 	default:
 		return nil, fmt.Errorf("暂时未处理%v 语句", statement)

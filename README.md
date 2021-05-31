@@ -5,6 +5,7 @@
 
 - 变量声明和赋值语句
 - 四则运算和逻辑运算
+- 函数声明
 - 匿名函数
 - return语句
 - 函数调用
@@ -30,9 +31,14 @@
         };
     };
 
+    function add(left, right) {
+			return left+right;
+	}
+
     calla(1,1,1,1);
     callb();
     callc()(2,2,3);
+    add(1, 2*3);
 ## out:
 7
 19
@@ -40,6 +46,7 @@
 4
 6
 12
+7
 ```
 
 
