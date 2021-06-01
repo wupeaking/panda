@@ -118,7 +118,7 @@ func (lexer *Lexer) readNumber(char rune) token.Token {
 	switch {
 	case char == '0':
 		if lexer.Peek() != '.' {
-			return token.Token{Type: token.ILLEGAL, Line: lexer.Pos().Line, Position: lexer.Pos().Offset}
+			return token.Token{Type: token.NUMBER, Literal: string(char), Line: lexer.Pos().Line, Position: lexer.Pos().Offset}
 		}
 		lexer.Next()
 		str := string(char) + "."

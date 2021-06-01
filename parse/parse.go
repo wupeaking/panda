@@ -10,6 +10,7 @@ import (
 const (
 	_      = iota
 	LOWEST // 最低
+	LOGIC  // 逻辑运算
 	SUM    // + -
 	MUL    // / * %
 	PREFIX // 前缀表达式的优先级
@@ -18,12 +19,18 @@ const (
 
 // 其实只有中缀的情况 才会需要设置优先级
 var tokenPrecedenceMap = map[token.TokenType]int{
-	token.PLUS:   SUM,
-	token.MINUS:  SUM,
-	token.MUL:    MUL,
-	token.DIV:    MUL,
-	token.MOD:    MUL,
-	token.LPAREN: CALL,
+	token.PLUS:            SUM,
+	token.MINUS:           SUM,
+	token.MUL:             MUL,
+	token.DIV:             MUL,
+	token.MOD:             MUL,
+	token.EQUALS:          LOGIC,
+	token.NOTEQUALS:       LOGIC,
+	token.LESS:            LOGIC,
+	token.LESSOREQUALS:    LOGIC,
+	token.GREATER:         LOGIC,
+	token.GREATEROREQUALS: LOGIC,
+	token.LPAREN:          CALL,
 }
 
 type Parser struct {
@@ -67,6 +74,15 @@ func New(l *lexer.Lexer) *Parser {
 	parse.registerInfixExpr(token.MUL, parse.paresInfixExprssion)
 	parse.registerInfixExpr(token.DIV, parse.paresInfixExprssion)
 	parse.registerInfixExpr(token.MOD, parse.paresInfixExprssion)
+
+	// > < >= <= == !=
+	parse.registerInfixExpr(token.EQUALS, parse.paresInfixExprssion)
+	parse.registerInfixExpr(token.NOTEQUALS, parse.paresInfixExprssion)
+	parse.registerInfixExpr(token.LESS, parse.paresInfixExprssion)
+	parse.registerInfixExpr(token.LESSOREQUALS, parse.paresInfixExprssion)
+	parse.registerInfixExpr(token.GREATER, parse.paresInfixExprssion)
+	parse.registerInfixExpr(token.GREATEROREQUALS, parse.paresInfixExprssion)
+
 	// ( 说明是函数调用 当做中缀表达式的时候 注意 优先级  如果调用到中缀 说明前面肯定有其他前缀表达式 这个时候 他应该是比前缀表达式的优先级还高
 	// 否则 对于+add() 会处理错误
 	parse.registerInfixExpr(token.LPAREN, parse.paresCallFunctionExprssion)
@@ -109,6 +125,10 @@ func (p *Parser) parserASTNode() ast.Node {
 	case token.FUNC:
 		// 函数声明
 		return p.parseFunctionStatement()
+
+	case token.IF:
+		// if语句
+		return p.parseIfStatement()
 
 	case token.IDENTIFIER:
 		if p.nextTokenIs(token.ASSIGN) {

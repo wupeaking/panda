@@ -8,11 +8,12 @@ const (
 	BREAK
 	FUNC
 	STRUCT
-	ELSE
 	GOTO
 	PACKAGE
 	SWITCH
 	IF
+	ELSEIF
+	ELSE
 	TYPE
 	CONTINUE
 	FOR
@@ -89,6 +90,7 @@ var TokenTypeLiteral = map[TokenType]string{
 	PACKAGE:    "package",
 	SWITCH:     "switch",
 	IF:         "if",
+	ELSEIF:     "elif",
 	TYPE:       "type",
 	CONTINUE:   "continue",
 	FOR:        "for",
