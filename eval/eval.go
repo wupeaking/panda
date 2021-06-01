@@ -166,6 +166,20 @@ func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 			leftValue, _ := inter.evalExpress(express.Left)
 			rightValue, _ := inter.evalExpress(express.Right)
 			return leftValue.(int64) / rightValue.(int64), nil
+			// 逻辑
+		case ">":
+			leftValue, err := inter.evalExpress(express.Left)
+			if err != nil {
+				return nil, err
+			}
+			rightValue, err := inter.evalExpress(express.Right)
+			if err != nil {
+				return nil, err
+			}
+
+		case "<":
+		case ">=":
+		case "<=":
 		default:
 			panic(fmt.Errorf("中缀表达式: %s 不支持%s 操作符", express.String(), express.Operator))
 		}

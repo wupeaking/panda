@@ -230,6 +230,7 @@ func (p *Parser) parseIfStatement() *ast.IFStatement {
 				p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.curToken.Type)))
 			return nil
 		}
+		statement.Alternative = &ast.BlockStatement{Token: p.curToken}
 		p.forwardToken() // {
 		p.forwardToken()
 
