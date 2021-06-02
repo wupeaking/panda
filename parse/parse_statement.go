@@ -252,3 +252,72 @@ func (p *Parser) parseIfStatement() *ast.IFStatement {
 
 	return &statement
 }
+
+func (p *Parser) parseForStatement() *ast.ForStatement {
+	forStatement := ast.ForStatement{}
+	forStatement.Token = p.curToken // for
+	if !p.nextTokenIs(token.LPAREN) {
+		p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待(实际是%s ",
+			p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.curToken.Type)))
+		return nil
+	}
+	p.forwardToken() // (
+	p.forwardToken()
+
+	forStatement.FirstCondition = p.parserASTNode()
+	_, ok := forStatement.FirstCondition.(ast.Statement)
+	if !ok {
+		p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d for语句首要循环条件需要是语句声明 ",
+			p.curToken.Line, p.curToken.Position))
+		return nil
+	}
+	if !p.nextTokenIs(token.SEMI) {
+		p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待; 实际是%s ",
+			p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.curToken.Type)))
+		return nil
+	}
+	p.forwardToken() //;
+	p.forwardToken()
+
+	forStatement.MidCondition = p.ParseExpression(LOWEST)
+	if !p.nextTokenIs(token.SEMI) {
+		p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待; 实际是%s ",
+			p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.curToken.Type)))
+		return nil
+	}
+
+	p.forwardToken() //;
+	p.forwardToken()
+
+	forStatement.LastCondition = p.parserASTNode()
+	if !p.nextTokenIs(token.RPAREN) {
+		p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待) 实际是%s ",
+			p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.curToken.Type)))
+		return nil
+	}
+	p.forwardToken() // )
+	if !p.nextTokenIs(token.LBRACE) {
+		p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待{ 实际是%s ",
+			p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.curToken.Type)))
+		return nil
+	}
+
+	p.forwardToken() // {
+	p.forwardToken()
+	forStatement.LoopBody = &ast.BlockStatement{Token: p.curToken}
+	nodes := make([]ast.Node, 0)
+	for {
+		node := p.parserASTNode()
+		if node == nil {
+			return nil
+		}
+		nodes = append(nodes, node)
+		if p.nextTokenIs(token.RBRACE) {
+			break
+		}
+		p.forwardToken()
+	}
+	forStatement.LoopBody.Statements = nodes
+	p.forwardToken() // }
+	return &forStatement
+}
