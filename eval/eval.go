@@ -512,6 +512,9 @@ func (inter *Interpreter) evalIFStatement(ifStatement *ast.IFStatement) (interfa
 		return inter.evalASTNodes(ifStatement.Consequence.Statements)
 
 	} else {
+		if ifStatement.Alternative == nil {
+			return nil, false, nil
+		}
 		inter.scopeManager.Push(IFScope)
 		defer inter.scopeManager.Pop()
 		return inter.evalASTNodes(ifStatement.Alternative.Statements)

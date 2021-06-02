@@ -37,6 +37,9 @@ func main() {
 		a+callc()(2,2,3);
 		function add(left, right) {
 			if(left>right){
+				if (left < 10) {
+					left = 10;
+				}
 				return left-right;
 			}else{
 				return left+right;
