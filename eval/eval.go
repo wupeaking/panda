@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	returnError = errors.New("exit")
+	returnError = errors.New("return")
 )
 
 type Interpreter struct {
@@ -30,34 +30,35 @@ func (inter *Interpreter) Eval() interface{} {
 }
 
 func (inter *Interpreter) evalProgram(astTree *ast.ProgramAST) interface{} {
-	ret, err := inter.evalASTNodes(astTree.NodeTrees)
+	ret, _, err := inter.evalASTNodes(astTree.NodeTrees)
 	if err != nil {
 		panic(err)
 	}
 	return ret
 }
 
-func (inter *Interpreter) evalASTNodes(nodes []ast.Node) (interface{}, error) {
+// bool :表示是否有返回值
+func (inter *Interpreter) evalASTNodes(nodes []ast.Node) (interface{}, bool, error) {
 	for i := range nodes {
 		switch x := nodes[i].(type) {
 		case ast.Statement:
 			v, err := inter.evalStatement(x)
 			if err == returnError {
-				return v, nil
+				return v, true, nil
 			}
 			if err != nil {
-				return nil, err
+				return nil, false, err
 			}
 
 		case ast.Expression:
 			v, err := inter.evalExpress(x)
 			if err != nil {
-				return nil, err
+				return nil, false, err
 			}
 			fmt.Printf("%v\n", v)
 		}
 	}
-	return nil, nil
+	return nil, false, nil
 }
 
 var VarMap = map[string]interface{}{}
@@ -123,6 +124,16 @@ func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error)
 		}
 		return nil, nil
 
+	case *ast.IFStatement:
+		v, ok, err := inter.evalIFStatement(statement)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			return v, returnError
+		}
+		return v, nil
+
 	default:
 		return nil, fmt.Errorf("暂时未处理%v 语句", statement)
 	}
@@ -147,26 +158,134 @@ func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 	case *ast.InfixExpression:
 		switch express.Operator {
 		case "+":
-			// todo:: 待支持浮点数
-			leftValue, _ := inter.evalExpress(express.Left)
-			rightValue, _ := inter.evalExpress(express.Right)
-			return leftValue.(int64) + rightValue.(int64), nil
+			leftValue, err := inter.evalExpress(express.Left)
+			if err != nil {
+				return nil, err
+			}
+			rightValue, err := inter.evalExpress(express.Right)
+			if err != nil {
+				return nil, err
+			}
+			switch left := leftValue.(type) {
+			case int64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left + right, nil
+				case float64:
+					return float64(left) + right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			case float64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left + float64(right), nil
+				case float64:
+					return float64(left) + right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			default:
+				return nil, fmt.Errorf("参数类型错误")
+			}
 
 		case "-":
-			leftValue, _ := inter.evalExpress(express.Left)
-			rightValue, _ := inter.evalExpress(express.Right)
-			return leftValue.(int64) - rightValue.(int64), nil
+			leftValue, err := inter.evalExpress(express.Left)
+			if err != nil {
+				return nil, err
+			}
+			rightValue, err := inter.evalExpress(express.Right)
+			if err != nil {
+				return nil, err
+			}
+			switch left := leftValue.(type) {
+			case int64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left - right, nil
+				case float64:
+					return float64(left) - right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			case float64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left - float64(right), nil
+				case float64:
+					return float64(left) - right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			default:
+				return nil, fmt.Errorf("参数类型错误")
+			}
 
 		case "*":
-			leftValue, _ := inter.evalExpress(express.Left)
-			rightValue, _ := inter.evalExpress(express.Right)
-			return leftValue.(int64) * rightValue.(int64), nil
+			leftValue, err := inter.evalExpress(express.Left)
+			if err != nil {
+				return nil, err
+			}
+			rightValue, err := inter.evalExpress(express.Right)
+			if err != nil {
+				return nil, err
+			}
+			switch left := leftValue.(type) {
+			case int64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left * right, nil
+				case float64:
+					return float64(left) * right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			case float64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left * float64(right), nil
+				case float64:
+					return float64(left) * right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			default:
+				return nil, fmt.Errorf("参数类型错误")
+			}
 
 		case "/":
-			leftValue, _ := inter.evalExpress(express.Left)
-			rightValue, _ := inter.evalExpress(express.Right)
-			return leftValue.(int64) / rightValue.(int64), nil
-			// 逻辑
+			leftValue, err := inter.evalExpress(express.Left)
+			if err != nil {
+				return nil, err
+			}
+			rightValue, err := inter.evalExpress(express.Right)
+			if err != nil {
+				return nil, err
+			}
+			switch left := leftValue.(type) {
+			case int64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left / right, nil
+				case float64:
+					return float64(left) / right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			case float64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left / float64(right), nil
+				case float64:
+					return float64(left) / right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			default:
+				return nil, fmt.Errorf("参数类型错误")
+			}
+
+		// 逻辑运算
 		case ">":
 			leftValue, err := inter.evalExpress(express.Left)
 			if err != nil {
@@ -176,10 +295,125 @@ func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 			if err != nil {
 				return nil, err
 			}
+			switch left := leftValue.(type) {
+			case int64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left > right, nil
+				case float64:
+					return float64(left) > right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			case float64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left > float64(right), nil
+				case float64:
+					return float64(left) > right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			default:
+				return nil, fmt.Errorf("参数类型错误")
+			}
 
 		case "<":
+			leftValue, err := inter.evalExpress(express.Left)
+			if err != nil {
+				return nil, err
+			}
+			rightValue, err := inter.evalExpress(express.Right)
+			if err != nil {
+				return nil, err
+			}
+			switch left := leftValue.(type) {
+			case int64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left < right, nil
+				case float64:
+					return float64(left) < right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			case float64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left < float64(right), nil
+				case float64:
+					return float64(left) < right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			default:
+				return nil, fmt.Errorf("参数类型错误")
+			}
+
 		case ">=":
+			leftValue, err := inter.evalExpress(express.Left)
+			if err != nil {
+				return nil, err
+			}
+			rightValue, err := inter.evalExpress(express.Right)
+			if err != nil {
+				return nil, err
+			}
+			switch left := leftValue.(type) {
+			case int64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left >= right, nil
+				case float64:
+					return float64(left) >= right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			case float64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left >= float64(right), nil
+				case float64:
+					return float64(left) >= right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			default:
+				return nil, fmt.Errorf("参数类型错误")
+			}
+
 		case "<=":
+			leftValue, err := inter.evalExpress(express.Left)
+			if err != nil {
+				return nil, err
+			}
+			rightValue, err := inter.evalExpress(express.Right)
+			if err != nil {
+				return nil, err
+			}
+			switch left := leftValue.(type) {
+			case int64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left <= right, nil
+				case float64:
+					return float64(left) <= right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			case float64:
+				switch right := rightValue.(type) {
+				case int64:
+					return left <= float64(right), nil
+				case float64:
+					return float64(left) <= right, nil
+				default:
+					return nil, fmt.Errorf("参数类型错误")
+				}
+			default:
+				return nil, fmt.Errorf("参数类型错误")
+			}
+
 		default:
 			panic(fmt.Errorf("中缀表达式: %s 不支持%s 操作符", express.String(), express.Operator))
 		}
@@ -253,6 +487,33 @@ func (inter *Interpreter) evalFunctionCall(funcNode *ast.CallExpression) (interf
 		inter.scopeManager.SetValue(arg.Value, argValue, true)
 	}
 	//anonyFunc.FuncBody.Statements
-	v, err := inter.evalASTNodes(anonyFunc.FuncBody.Statements)
-	return v, true, err
+	return inter.evalASTNodes(anonyFunc.FuncBody.Statements)
+}
+
+func (inter *Interpreter) evalIFStatement(ifStatement *ast.IFStatement) (interface{}, bool, error) {
+	conditionValue, err := inter.evalExpress(ifStatement.Condition)
+	if err != nil {
+		return nil, false, err
+	}
+	var condition bool
+	switch x := conditionValue.(type) {
+	case int64:
+		condition = x > 0
+	case float64:
+		condition = x > 0.0
+	case bool:
+		condition = x
+	default:
+		return nil, false, fmt.Errorf("if 表达式结果只能是数字和布尔类型")
+	}
+	if condition {
+		inter.scopeManager.Push(IFScope)
+		defer inter.scopeManager.Pop()
+		return inter.evalASTNodes(ifStatement.Consequence.Statements)
+
+	} else {
+		inter.scopeManager.Push(IFScope)
+		defer inter.scopeManager.Pop()
+		return inter.evalASTNodes(ifStatement.Alternative.Statements)
+	}
 }

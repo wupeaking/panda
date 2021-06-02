@@ -17,7 +17,7 @@ func TestLexer(t *testing.T) {
 	!-/*5;
 	5 < 10 > 5;
 	
-	if (5 < 0) {
+	if (5 < 12.1) {
 		return true;
 	} else {
 		return false;
@@ -95,7 +95,7 @@ func TestLexer(t *testing.T) {
 		{token.LPAREN, "("},
 		{token.NUMBER, "5"},
 		{token.LESS, "<"},
-		{token.NUMBER, "0"},
+		{token.NUMBER, "12.1"},
 		{token.RPAREN, ")"},
 		{token.LBRACE, "{"},
 		{token.RETURN, "return"},

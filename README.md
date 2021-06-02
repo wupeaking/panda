@@ -9,6 +9,7 @@
 - 匿名函数
 - return语句
 - 函数调用
+- 流程控制if语句
 
 ### 示例
 ```
@@ -32,9 +33,12 @@
     };
 
     function add(left, right) {
-			return left+right;
-	}
-
+        if(left>right){
+            return left-right;
+        }else{
+            return left+right;
+        }
+    }
     calla(1,1,1,1);
     callb();
     callc()(2,2,3);

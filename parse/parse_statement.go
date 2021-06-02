@@ -234,6 +234,7 @@ func (p *Parser) parseIfStatement() *ast.IFStatement {
 		p.forwardToken() // {
 		p.forwardToken()
 
+		nodes := make([]ast.Node, 0)
 		for {
 			node := p.parserASTNode()
 			if node == nil {
