@@ -123,3 +123,15 @@ func (fs *FunctionStatement) String() string {
 	out.WriteString(" >")
 	return out.String()
 }
+
+type BreakStatement struct {
+	Token token.Token
+}
+
+func (bk *BreakStatement) StatementNode()       {}
+func (bk *BreakStatement) TokenLiteral() string { return bk.Token.Literal }
+func (bk *BreakStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString("break;")
+	return out.String()
+}

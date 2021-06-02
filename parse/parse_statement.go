@@ -271,13 +271,13 @@ func (p *Parser) parseForStatement() *ast.ForStatement {
 			p.curToken.Line, p.curToken.Position))
 		return nil
 	}
-	if !p.nextTokenIs(token.SEMI) {
+	if !p.curTokenIs(token.SEMI) {
 		p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待; 实际是%s ",
 			p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.curToken.Type)))
 		return nil
 	}
 	p.forwardToken() //;
-	p.forwardToken()
+	//p.forwardToken()
 
 	forStatement.MidCondition = p.ParseExpression(LOWEST)
 	if !p.nextTokenIs(token.SEMI) {
@@ -289,7 +289,9 @@ func (p *Parser) parseForStatement() *ast.ForStatement {
 	p.forwardToken() //;
 	p.forwardToken()
 
-	forStatement.LastCondition = p.parserASTNode()
+	// 这里会有点问题 parserASTNode 解析的时候会处理; 但是for最后一个条件没有分号
+	// todo:: 目前认定最后一个条件必须是赋值语句
+	forStatement.LastCondition = p.parseAssginStatementHelper()
 	if !p.nextTokenIs(token.RPAREN) {
 		p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待) 实际是%s ",
 			p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.curToken.Type)))
@@ -320,4 +322,29 @@ func (p *Parser) parseForStatement() *ast.ForStatement {
 	forStatement.LoopBody.Statements = nodes
 	p.forwardToken() // }
 	return &forStatement
+}
+
+func (p *Parser) parseAssginStatementHelper() *ast.AssginStatement {
+	assginStmt := ast.AssginStatement{}
+	idToken := p.curToken
+	p.forwardToken()
+	assginStmt.Name = &ast.IdentifierExpression{
+		Token: idToken,
+		Value: idToken.Literal,
+	}
+	p.forwardToken()
+	assginStmt.Value = p.ParseExpression(LOWEST)
+	return &assginStmt
+}
+
+func (p *Parser) parseBreakStatement() *ast.BreakStatement {
+	statement := ast.BreakStatement{}
+	statement.Token = p.curToken
+	if !p.nextTokenIs(token.SEMI) {
+		p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待{ 实际是%s ",
+			p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.nextToken.Type)))
+		return nil
+	}
+	p.forwardToken() //;
+	return &statement
 }

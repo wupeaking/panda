@@ -110,6 +110,9 @@ func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error)
 		}
 		return v, returnError
 
+	case *ast.BreakStatement:
+		return statement, nil
+
 	case *ast.FunctionStatement:
 		//将其转化为匿名函数表达式 放入变量池中
 		funcName := statement.Name.Value
@@ -126,6 +129,16 @@ func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error)
 
 	case *ast.IFStatement:
 		v, ok, err := inter.evalIFStatement(statement)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			return v, returnError
+		}
+		return v, nil
+
+	case *ast.ForStatement:
+		v, ok, err := inter.evalForStatement(statement)
 		if err != nil {
 			return nil, err
 		}

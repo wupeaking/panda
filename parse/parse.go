@@ -133,6 +133,9 @@ func (p *Parser) parserASTNode() ast.Node {
 	case token.FOR:
 		// for
 		return p.parseForStatement()
+	case token.BREAK:
+		// break
+		return p.parseBreakStatement()
 
 	case token.IDENTIFIER:
 		if p.nextTokenIs(token.ASSIGN) {
