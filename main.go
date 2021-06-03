@@ -19,7 +19,7 @@ func main() {
 		for(var a = 1; a<10; a=a+1){
 			b = b +a;
 			b;
-			if (a>5){
+			if (a>=5){
 				break;
 			}
 		}

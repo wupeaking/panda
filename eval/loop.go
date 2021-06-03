@@ -38,7 +38,7 @@ func (inter *Interpreter) evalForStatement(forStatement *ast.ForStatement) (inte
 
 		// break 语句
 		if ret != nil {
-			if _, ok := ret.(*ast.BlockStatement); ok {
+			if _, ok := ret.(*ast.BreakStatement); ok {
 				return nil, false, nil
 			}
 		}

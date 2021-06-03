@@ -34,6 +34,7 @@ func (inter *Interpreter) evalProgram(astTree *ast.ProgramAST) interface{} {
 	if err != nil {
 		panic(err)
 	}
+
 	return ret
 }
 
@@ -48,6 +49,12 @@ func (inter *Interpreter) evalASTNodes(nodes []ast.Node) (interface{}, bool, err
 			}
 			if err != nil {
 				return nil, false, err
+			}
+			// 处理break
+			if v != nil {
+				if _, ok := v.(*ast.BreakStatement); ok {
+					return v, false, nil
+				}
 			}
 
 		case ast.Expression:
