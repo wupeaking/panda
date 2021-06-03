@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"panda/ast"
 	"panda/parse"
+	"panda/stdlib"
 )
 
 var (
@@ -17,25 +18,29 @@ type Interpreter struct {
 }
 
 func New(p *parse.Parser) *Interpreter {
-	return &Interpreter{p: p, scopeManager: NewScopeManager()}
+	obj := &Interpreter{p: p, scopeManager: NewScopeManager()}
+	for name, f := range stdlib.StdlibFuncs {
+		obj.scopeManager.SetValue(name, f, true)
+	}
+	return obj
 }
 
-func (inter *Interpreter) Eval() interface{} {
+func (inter *Interpreter) SetParser(p *parse.Parser) {
+	inter.p = p
+}
+
+func (inter *Interpreter) Eval() (interface{}, error) {
 	astTree := inter.p.ParserAST()
 	if err := inter.p.Errors(); err != nil {
-		panic(err)
+		return nil, err
 	}
 	// fmt.Printf("%v\n", astTree)
 	return inter.evalProgram(astTree)
 }
 
-func (inter *Interpreter) evalProgram(astTree *ast.ProgramAST) interface{} {
+func (inter *Interpreter) evalProgram(astTree *ast.ProgramAST) (interface{}, error) {
 	ret, _, err := inter.evalASTNodes(astTree.NodeTrees)
-	if err != nil {
-		panic(err)
-	}
-
-	return ret
+	return ret, err
 }
 
 // bool :表示是否有返回值
@@ -58,17 +63,15 @@ func (inter *Interpreter) evalASTNodes(nodes []ast.Node) (interface{}, bool, err
 			}
 
 		case ast.Expression:
-			v, err := inter.evalExpress(x)
+			_, err := inter.evalExpress(x)
 			if err != nil {
 				return nil, false, err
 			}
-			fmt.Printf("%v\n", v)
+			//fmt.Printf("%v\n", v)
 		}
 	}
 	return nil, false, nil
 }
-
-var VarMap = map[string]interface{}{}
 
 func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error) {
 	switch statement := stmt.(type) {
@@ -103,11 +106,11 @@ func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error)
 		}
 
 	case *ast.ExpressStatement:
-		v, err := inter.evalExpress(statement.Expression)
+		_, err := inter.evalExpress(statement.Expression)
 		if err != nil {
 			return nil, err
 		}
-		fmt.Printf("%v\n", v)
+		// fmt.Printf("%v\n", v)
 
 	case *ast.ReturnStatement:
 		// 返回语句
@@ -483,31 +486,43 @@ func (inter *Interpreter) evalFunctionCall(funcNode *ast.CallExpression) (interf
 	if err != nil {
 		return nil, false, err
 	}
+	switch anonyFunc := funcExp.(type) {
+	case *ast.AnonymousFuncExpression:
+		if len(anonyFunc.Args) != len(funcNode.Arguments) {
+			return nil, false, fmt.Errorf("实参和形参数量不一致")
+		}
+		inter.scopeManager.Push(FuncScope)
+		defer inter.scopeManager.Pop()
 
-	anonyFunc, ok := funcExp.(*ast.AnonymousFuncExpression)
-	if !ok {
+		// 进行传值
+		for i := range anonyFunc.Args {
+			arg, ok := anonyFunc.Args[i].(*ast.IdentifierExpression)
+			if !ok {
+				return nil, false, fmt.Errorf("%v 参数类型错误", funcNode.FuncName)
+			}
+			argValue, err := inter.evalExpress(funcNode.Arguments[i])
+			if err != nil {
+				return nil, false, err
+			}
+			inter.scopeManager.SetValue(arg.Value, argValue, true)
+		}
+		//anonyFunc.FuncBody.Statements
+		return inter.evalASTNodes(anonyFunc.FuncBody.Statements)
+	case stdlib.BuildFunc:
+		args := make([]interface{}, 0, len(funcNode.Arguments))
+		for i := range funcNode.Arguments {
+			argValue, err := inter.evalExpress(funcNode.Arguments[i])
+			if err != nil {
+				return nil, false, err
+			}
+			args = append(args, argValue)
+		}
+		return anonyFunc(args)
+
+	default:
 		return nil, false, fmt.Errorf("%v不是函数", funcNode.FuncName)
 	}
-	if len(anonyFunc.Args) != len(funcNode.Arguments) {
-		return nil, false, fmt.Errorf("实参和形参数量不一致")
-	}
-	inter.scopeManager.Push(FuncScope)
-	defer inter.scopeManager.Pop()
 
-	// 进行传值
-	for i := range anonyFunc.Args {
-		arg, ok := anonyFunc.Args[i].(*ast.IdentifierExpression)
-		if !ok {
-			return nil, false, fmt.Errorf("%v 参数类型错误", funcNode.FuncName)
-		}
-		argValue, err := inter.evalExpress(funcNode.Arguments[i])
-		if err != nil {
-			return nil, false, err
-		}
-		inter.scopeManager.SetValue(arg.Value, argValue, true)
-	}
-	//anonyFunc.FuncBody.Statements
-	return inter.evalASTNodes(anonyFunc.FuncBody.Statements)
 }
 
 func (inter *Interpreter) evalIFStatement(ifStatement *ast.IFStatement) (interface{}, bool, error) {

@@ -11,6 +11,7 @@ import (
 )
 
 func StartREPL(in io.Reader, out io.Writer) {
+	inter := eval.New(nil)
 	for {
 		fmt.Fprintf(out, ">> ")
 
@@ -25,10 +26,15 @@ func StartREPL(in io.Reader, out io.Writer) {
 		// 	fmt.Fprintf(out, ">> %v\n", tok)
 		// }
 		p := parse.New(lex)
-
+		inter.SetParser(p)
 		// fmt.Fprintf(out, " %v\n",)
 
-		inter := eval.New(p)
-		fmt.Fprintf(out, " %v\n", inter.Eval())
+		ret, err := inter.Eval()
+		if err != nil {
+			fmt.Fprintf(out, " %v\n", err)
+		} else {
+			fmt.Fprintf(out, " %v\n", ret)
+		}
+
 	}
 }

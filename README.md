@@ -16,11 +16,11 @@
 ```
 ## in:
     var a = 1 +2*3;
-    a;
-    a = a+12;
-    a;
+    println(a);
+    a = a+12.1;
+    println(a);
     var b = 1+a;
-    b*a+1+2;
+    println(b*a+1+2);
     var calla = function(a, b, c, d) {
         return a+b+c+d;
     };
@@ -32,34 +32,33 @@
             return a*b*c;
         };
     };
-
-    function add(left, right) {
-        if(left>right){
-            return left-right;
-        }else{
-            return left+right;
-        }
-    }
-    calla(1,1,1,1);
+    println(calla(1,1,1,1));
     callb();
     callc()(2,2,3);
-    add(1, 2*3);
-
+    println(a+callc()(2,2,3));
+    function add(left, right) {
+        return left+right;
+    }
+    add(1, 2.1*3);
+    var b = 1;
     for(var a = 1; a<10; a=a+1){
         b = b +a;
-        b;
+        println(b);
         if (a>=5){
             break;
         }
     }
 ## out:
-7
-19
-383
-4
-6
-12
-7
+7 
+19.1 
+386.91 
+4 
+31.1 
+2 
+4 
+7 
+11 
+16
 ```
 
 
