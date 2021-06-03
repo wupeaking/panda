@@ -66,7 +66,10 @@ func New(l *lexer.Lexer) *Parser {
 	// 变量表达式 和解析number类似
 	parse.registerPrefixExpr(token.IDENTIFIER, parse.parseIdent)
 	// 匿名函数表达式
-	parse.registerPrefixExpr(token.FUNC, parse.paresAnonymousFunctionExprssion)
+	parse.registerPrefixExpr(token.FUNC, parse.parseAnonymousFunctionExprssion)
+	// [ 作为前缀的 数组表达式
+	parse.registerPrefixExpr(token.LBRACKET, parse.parseArrayExprssion)
+
 	// 中缀
 	// + - * /
 	parse.registerInfixExpr(token.PLUS, parse.paresInfixExprssion)
@@ -85,7 +88,7 @@ func New(l *lexer.Lexer) *Parser {
 
 	// ( 说明是函数调用 当做中缀表达式的时候 注意 优先级  如果调用到中缀 说明前面肯定有其他前缀表达式 这个时候 他应该是比前缀表达式的优先级还高
 	// 否则 对于+add() 会处理错误
-	parse.registerInfixExpr(token.LPAREN, parse.paresCallFunctionExprssion)
+	parse.registerInfixExpr(token.LPAREN, parse.parseCallFunctionExprssion)
 
 	parse.forwardToken()
 	parse.forwardToken()

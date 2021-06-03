@@ -6,7 +6,7 @@ import (
 	"panda/token"
 )
 
-func (p *Parser) paresAnonymousFunctionExprssion() ast.Expression {
+func (p *Parser) parseAnonymousFunctionExprssion() ast.Expression {
 	exp := ast.AnonymousFuncExpression{}
 	exp.Token = p.curToken // function
 	if !p.nextTokenIs(token.LPAREN) {
@@ -76,16 +76,16 @@ parseBody:
 }
 
 // paresCallFunctionExprssion 解析函数调用  add() add()()()
-func (p *Parser) paresCallFunctionExprssion(funcName ast.Expression) ast.Expression {
-	exp := p.paresCallFunctionExprssionHelper(funcName)
+func (p *Parser) parseCallFunctionExprssion(funcName ast.Expression) ast.Expression {
+	exp := p.parseCallFunctionExprssionHelper(funcName)
 	for p.nextTokenIs(token.LPAREN) {
 		p.forwardToken()
-		exp = p.paresCallFunctionExprssionHelper(exp)
+		exp = p.parseCallFunctionExprssionHelper(exp)
 	}
 	return exp
 }
 
-func (p *Parser) paresCallFunctionExprssionHelper(funcName ast.Expression) ast.Expression {
+func (p *Parser) parseCallFunctionExprssionHelper(funcName ast.Expression) ast.Expression {
 	exp := ast.CallExpression{}
 	// 可能的表达式是 add()
 	// 也可能是 addFn()() 所以funcName 也能的值是id表达式和调用表达式
@@ -123,4 +123,30 @@ func (p *Parser) paresCallFunctionExprssionHelper(funcName ast.Expression) ast.E
 	p.forwardToken() // )
 
 	return &exp
+}
+
+func (p *Parser) parseArrayExprssion() ast.Expression {
+	array := &ast.ArrayExpression{}
+	array.Token = p.curToken
+	p.forwardToken() //
+	array.Exprs = make([]ast.Expression, 0)
+	if p.nextTokenIs(token.RBRACKET) {
+		p.forwardToken() //]
+		return array
+
+	}
+	for {
+		exp := p.ParseExpression(LOWEST)
+		array.Exprs = append(array.Exprs, exp)
+		if p.nextTokenIs(token.RBRACKET) {
+			break
+		}
+		if !p.nextTokenIs(token.COLON) {
+			p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待, 实际是%s ",
+				p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.nextToken.Type)))
+			return nil
+		}
+	}
+	p.forwardToken() // ]
+	return array
 }
