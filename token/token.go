@@ -38,7 +38,7 @@ const (
 	RBRACKET // ]
 	COMMA    // ,
 	SEMI     // ;
-	COLON    // ,
+	COLON    // :
 	DOT      // .
 
 	// Logical

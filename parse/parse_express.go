@@ -141,12 +141,29 @@ func (p *Parser) parseArrayExprssion() ast.Expression {
 		if p.nextTokenIs(token.RBRACKET) {
 			break
 		}
-		if !p.nextTokenIs(token.COLON) {
+		if !p.nextTokenIs(token.COMMA) {
 			p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待, 实际是%s ",
 				p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.nextToken.Type)))
 			return nil
 		}
+		p.forwardToken() // ,
+		p.forwardToken()
 	}
 	p.forwardToken() // ]
 	return array
+}
+
+func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
+	indexExp := ast.IndexExpression{}
+	indexExp.Token = p.curToken // [
+	p.forwardToken()            //
+	indexExp.Name = left
+	indexExp.Index = p.ParseExpression(LOWEST)
+	if !p.nextTokenIs(token.RBRACKET) {
+		p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待] 实际是%s ",
+			p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.nextToken.Type)))
+		return nil
+	}
+	p.forwardToken() //]
+	return &indexExp
 }

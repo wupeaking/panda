@@ -474,6 +474,12 @@ func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 		v, _, err := inter.evalFunctionCall(express)
 		return v, err
 
+	case *ast.ArrayExpression:
+		return inter.evalArrayExpression(express)
+
+	case *ast.IndexExpression:
+		return inter.evalIndexExpression(express)
+
 	default:
 		return nil, fmt.Errorf("未识别的表达式: %v", express)
 	}
@@ -554,4 +560,53 @@ func (inter *Interpreter) evalIFStatement(ifStatement *ast.IFStatement) (interfa
 		defer inter.scopeManager.Pop()
 		return inter.evalASTNodes(ifStatement.Alternative.Statements)
 	}
+}
+
+func (inter *Interpreter) evalArrayExpression(arrExp *ast.ArrayExpression) ([]interface{}, error) {
+	ret := make([]interface{}, 0, len(arrExp.Exprs))
+	for i := range arrExp.Exprs {
+		v, err := inter.evalExpress(arrExp.Exprs[i])
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, v)
+	}
+	return ret, nil
+}
+
+type IndexValue struct {
+	Name  ast.Expression // []interface{} 或者map[interface{}]inteface{}
+	Index interface{}    // int64, string
+	Value interface{}    //
+}
+
+func (inter *Interpreter) evalIndexExpression(index *ast.IndexExpression) (interface{}, error) {
+	value, err := inter.evalExpress(index.Name)
+	if err != nil {
+		return nil, err
+	}
+	retValue := IndexValue{}
+	retValue.Name = index.Name
+	arr, ok := value.([]interface{})
+	// todo:: 暂时只支持数组
+	if !ok {
+		return nil, fmt.Errorf("返回类型不能进行索引")
+	}
+	arrIndex, err := inter.evalExpress(index.Index)
+	if err != nil {
+		return nil, err
+	}
+	arrI, ok := arrIndex.(int64)
+	// todo:: 暂时只支持数组的索引
+	if !ok {
+		return nil, fmt.Errorf("数组的索引必须是整数")
+	}
+	if int(arrI) >= len(arr) {
+		return nil, fmt.Errorf("数组索引超出范围")
+	}
+
+	retValue.Index = arrI
+	retValue.Value = arr[arrI]
+	_ = retValue
+	return arr[arrI], nil
 }

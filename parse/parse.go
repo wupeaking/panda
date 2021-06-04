@@ -14,6 +14,7 @@ const (
 	SUM    // + -
 	MUL    // / * %
 	PREFIX // 前缀表达式的优先级
+	INDEX  // 数组和map索引
 	CALL   // 当进入前缀表达式时  要保证调用表达式比他级别高 比如 +add() 如果不设置这个级别 会返回 +add 而不是+add()
 )
 
@@ -31,6 +32,7 @@ var tokenPrecedenceMap = map[token.TokenType]int{
 	token.GREATER:         LOGIC,
 	token.GREATEROREQUALS: LOGIC,
 	token.LPAREN:          CALL,
+	token.LBRACKET:        INDEX,
 }
 
 type Parser struct {
@@ -90,6 +92,10 @@ func New(l *lexer.Lexer) *Parser {
 	// 否则 对于+add() 会处理错误
 	parse.registerInfixExpr(token.LPAREN, parse.parseCallFunctionExprssion)
 
+	// [ 索引表达式 同理 它应该比前缀的优先级高  +a[1]--> + a[1]   1*a[]--> 1 * a[] call()[1]--> call() [1] 所以 index索引优先级
+	// 应该是比前缀的高 但是要比函数调用低
+	parse.registerInfixExpr(token.LBRACKET, parse.parseIndexExpression)
+
 	parse.forwardToken()
 	parse.forwardToken()
 	return parse
@@ -142,6 +148,7 @@ func (p *Parser) parserASTNode() ast.Node {
 
 	case token.IDENTIFIER:
 		if p.nextTokenIs(token.ASSIGN) {
+			// todo:: 后面支持 数组和map的赋值
 			return p.parseAssginStatement()
 		}
 		fallthrough

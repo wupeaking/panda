@@ -25,3 +25,22 @@ func (ae *ArrayExpression) String() string {
 	out.WriteString("] ")
 	return out.String()
 }
+
+// 对数组和map的索引
+type IndexExpression struct {
+	Token token.Token
+	Name  Expression
+	Index Expression
+}
+
+func (ie *IndexExpression) ExpressionNode()      {}
+func (ie *IndexExpression) TokenLiteral() string { return ie.Token.Literal }
+
+func (ie *IndexExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString(ie.Name.String())
+	out.WriteString("[")
+	out.WriteString(ie.Index.String())
+	out.WriteString("] ")
+	return out.String()
+}
