@@ -167,3 +167,22 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	p.forwardToken() //]
 	return &indexExp
 }
+
+func (p *Parser) parseMapExprssion() ast.Expression {
+	/*
+		{
+			"xxxx":"xxx",
+		}
+	*/
+	m := &ast.MapExpression{}
+	m.Token = p.curToken
+	m.KV = make(map[ast.Expression]ast.Expression)
+	p.forwardToken() // {
+	p.forwardToken()
+	if p.curTokenIs(token.RBRACE) {
+		return m
+	}
+	for {
+
+	}
+}

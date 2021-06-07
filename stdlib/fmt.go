@@ -24,3 +24,18 @@ func length(args []interface{}) (interface{}, bool, error) {
 	}
 	return int64(0), true, nil
 }
+
+func appendArr(args []interface{}) (interface{}, bool, error) {
+	if len(args) < 2 {
+		return nil, false, fmt.Errorf("参数数量错误")
+	}
+	arrI := args[0]
+	arr, ok := arrI.([]interface{})
+	if !ok {
+		return nil, false, fmt.Errorf("必须是数组才可以append")
+	}
+	for i := 1; i < len(args); i++ {
+		arr = append(arr, args[i])
+	}
+	return arr, true, nil
+}

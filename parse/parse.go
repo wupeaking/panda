@@ -73,6 +73,8 @@ func New(l *lexer.Lexer) *Parser {
 	parse.registerPrefixExpr(token.FUNC, parse.parseAnonymousFunctionExprssion)
 	// [ 作为前缀的 数组表达式
 	parse.registerPrefixExpr(token.LBRACKET, parse.parseArrayExprssion)
+	// { 作为前缀 map表达式
+	parse.registerPrefixExpr(token.LBRACKET, parse.parseArrayExprssion)
 
 	// 中缀
 	// + - * /
