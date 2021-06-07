@@ -166,8 +166,12 @@ func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error)
 func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 	switch express := exp.(type) {
 	case *ast.NumberExpression:
-		// fmt.Println(express.Value)
 		return express.Value, nil
+	case *ast.StringExpression:
+		return express.Value, nil
+	case *ast.BoolExpression:
+		return express.Value, nil
+
 	case *ast.IdentifierExpression:
 		// todo:: 去变量表 找到对应的值 返回
 		// fmt.Printf("Id(%s)\n", express.Value)

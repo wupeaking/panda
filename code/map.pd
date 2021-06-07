@@ -1,0 +1,5 @@
+var a = {
+    "name": "wpx",
+    "age" : 10+20,
+    "sex": true
+};

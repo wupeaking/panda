@@ -2,34 +2,109 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"panda/eval"
 	"panda/lexer"
 	"panda/parse"
 	"panda/repl"
+	"strings"
+
+	"github.com/urfave/cli/v2"
 )
 
-var debug = true
+var debug = false
 
 func main() {
-	if len(os.Args) > 1 {
-		file, err := os.Open(os.Args[1])
-		if err != nil {
-			panic(err)
-		}
-		defer file.Close()
-		lex := lexer.New(file)
-		p := parse.New(lex)
-		inter := eval.New(p)
-		v, err := inter.Eval()
-		if err != nil {
-			panic(err)
-		}
-		if v != nil {
-			fmt.Printf("%v\n", v)
-		}
-	} else {
-		repl.StartREPL(os.Stdin, os.Stdout)
+	if debug {
+		debugfunc()
+		return
+	}
+
+	app := &cli.App{
+		Name:      "Panda",
+		Version:   "0.0.1",
+		Usage:     "一个玩具性质的脚本解释器",
+		ArgsUsage: "源文件路径",
+		Commands: []*cli.Command{
+			{
+				Name:        "ast",
+				Aliases:     []string{"ast"},
+				Usage:       "打印出抽象语法树",
+				Description: "读取源文件 打印抽象语法树",
+				Flags: []cli.Flag{
+					&cli.StringFlag{Name: "file", Aliases: []string{"f"}, Usage: "源文件路径", Required: true},
+				},
+				Action: func(c *cli.Context) error {
+					return printAst(c.String("file"))
+				},
+			},
+		},
+		Action: func(c *cli.Context) error {
+			if c.Args().Len() > 1 {
+				file, err := os.Open(c.Args().First())
+				if err != nil {
+					return err
+				}
+				defer file.Close()
+				lex := lexer.New(file)
+				p := parse.New(lex)
+				inter := eval.New(p)
+				v, err := inter.Eval()
+				if err != nil {
+					return err
+				}
+				if v != nil {
+					fmt.Printf("%v\n", v)
+				}
+			} else {
+				repl.StartREPL(os.Stdin, os.Stdout)
+			}
+			return nil
+		},
+	}
+
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+}
+
+func printAst(f string) error {
+	file, err := os.Open(f)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	lex := lexer.New(file)
+	p := parse.New(lex)
+	trees := p.ParserAST()
+	if p.Errors() != nil {
+		return p.Errors()
+	}
+	for i := range trees.NodeTrees {
+		fmt.Println(trees.NodeTrees[i])
+	}
+	return nil
+}
+
+func debugfunc() {
+	lex := lexer.New(strings.NewReader(`
+	var a = {
+		"name": "wpx",
+		"age" : 10+20,
+		"sex": true
+	}
+	`))
+	p := parse.New(lex)
+	inter := eval.New(p)
+	v, err := inter.Eval()
+	if err != nil {
+		panic(err)
+	}
+	if v != nil {
+		fmt.Printf("%v\n", v)
 	}
 }
 

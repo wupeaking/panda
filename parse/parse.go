@@ -60,6 +60,9 @@ func New(l *lexer.Lexer) *Parser {
 	// 注册前缀
 	// number
 	parse.registerPrefixExpr(token.NUMBER, parse.parseNumber)
+	// str
+	parse.registerPrefixExpr(token.STRING, parse.parseString)
+	parse.registerPrefixExpr(token.TRUE, parse.parseBool)
 	// + - 可以做前缀
 	parse.registerPrefixExpr(token.PLUS, parse.paresPrefixExprssion)
 	parse.registerPrefixExpr(token.MINUS, parse.paresPrefixExprssion)
@@ -74,7 +77,7 @@ func New(l *lexer.Lexer) *Parser {
 	// [ 作为前缀的 数组表达式
 	parse.registerPrefixExpr(token.LBRACKET, parse.parseArrayExprssion)
 	// { 作为前缀 map表达式
-	parse.registerPrefixExpr(token.LBRACKET, parse.parseArrayExprssion)
+	parse.registerPrefixExpr(token.LBRACE, parse.parseMapExprssion)
 
 	// 中缀
 	// + - * /

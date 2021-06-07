@@ -172,17 +172,42 @@ func (p *Parser) parseMapExprssion() ast.Expression {
 	/*
 		{
 			"xxxx":"xxx",
+			123: "xwdw",
 		}
 	*/
 	m := &ast.MapExpression{}
 	m.Token = p.curToken
 	m.KV = make(map[ast.Expression]ast.Expression)
-	p.forwardToken() // {
-	p.forwardToken()
+	p.forwardToken() //
+	//p.forwardToken()
 	if p.curTokenIs(token.RBRACE) {
 		return m
 	}
 	for {
+		key := p.ParseExpression(LOWEST)
+		if !p.nextTokenIs(token.COLON) {
+			p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待] 实际是%s ",
+				p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.nextToken.Type)))
+			return nil
+		}
+		p.forwardToken() // :
+		p.forwardToken()
+		value := p.ParseExpression(LOWEST)
+		m.KV[key] = value
 
+		if p.nextTokenIs(token.RBRACE) {
+			break
+		}
+		if p.nextTokenIs(token.COMMA) {
+			p.forwardToken() // ,
+			p.forwardToken()
+			continue
+		} else {
+			p.errs = append(p.errs, fmt.Errorf("line: %d, pos: %d 期待}或者, 实际是%s ",
+				p.curToken.Line, p.curToken.Position, token.TokenType2Name(p.nextToken.Type)))
+			return nil
+		}
 	}
+	p.forwardToken() // }
+	return m
 }
