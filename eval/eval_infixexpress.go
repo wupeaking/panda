@@ -328,6 +328,46 @@ func (inter *Interpreter) evalLeeExpression(express *ast.InfixExpression) (inter
 	}
 }
 
+func (inter *Interpreter) evalEQExpression(express *ast.InfixExpression) (interface{}, error) {
+	leftValue, err := inter.evalExpress(express.Left)
+	if err != nil {
+		return nil, err
+	}
+	rightValue, err := inter.evalExpress(express.Right)
+	if err != nil {
+		return nil, err
+	}
+	switch left := leftValue.(type) {
+	case int64:
+		switch right := rightValue.(type) {
+		case int64:
+			return left == right, nil
+		case float64:
+			return float64(left) == right, nil
+		default:
+			return nil, fmt.Errorf("参数类型错误")
+		}
+	case float64:
+		switch right := rightValue.(type) {
+		case int64:
+			return left == float64(right), nil
+		case float64:
+			return float64(left) == right, nil
+		default:
+			return nil, fmt.Errorf("参数类型错误")
+		}
+	case string:
+		switch right := rightValue.(type) {
+		case string:
+			return strings.Compare(left, right) == 0, nil
+		default:
+			return nil, fmt.Errorf("参数类型错误")
+		}
+	default:
+		return nil, fmt.Errorf("参数类型错误")
+	}
+}
+
 // ||
 func (inter *Interpreter) evalLogicORExpression(express *ast.InfixExpression) (interface{}, error) {
 	leftValue, err := inter.evalExpress(express.Left)

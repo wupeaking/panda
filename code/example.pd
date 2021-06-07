@@ -32,4 +32,10 @@
         }
     }
     var a = [1, 2, [3, 1, 2]];
-    println(a[2][1]);
+    for(var i = 0; i < len(a); i=i+1) {
+        if(i==2) {
+            println(a[i][1]);
+        }else{
+            println(a[i]);
+        }
+    }

@@ -197,6 +197,8 @@ func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 			return inter.evalGteExpression(express)
 		case "<=":
 			return inter.evalLeeExpression(express)
+		case "==":
+			return inter.evalEQExpression(express)
 		// 逻辑运算
 		case "||":
 			return inter.evalLogicORExpression(express)
