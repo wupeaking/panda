@@ -308,7 +308,7 @@ func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 				return nil, fmt.Errorf("参数类型错误")
 			}
 
-		// 逻辑运算
+		// 比较运算
 		case ">":
 			leftValue, err := inter.evalExpress(express.Left)
 			if err != nil {
@@ -436,6 +436,45 @@ func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 			default:
 				return nil, fmt.Errorf("参数类型错误")
 			}
+
+		// 逻辑运算
+		case "||":
+			leftValue, err := inter.evalExpress(express.Left)
+			if err != nil {
+				return nil, err
+			}
+			rightValue, err := inter.evalExpress(express.Right)
+			if err != nil {
+				return nil, err
+			}
+			left, ok := leftValue.(bool)
+			if !ok {
+				return nil, fmt.Errorf("参数类型错误 期待bool值")
+			}
+			right, ok := rightValue.(bool)
+			if !ok {
+				return nil, fmt.Errorf("参数类型错误 期待bool值")
+			}
+			return left || right, nil
+
+		case "&&":
+			leftValue, err := inter.evalExpress(express.Left)
+			if err != nil {
+				return nil, err
+			}
+			rightValue, err := inter.evalExpress(express.Right)
+			if err != nil {
+				return nil, err
+			}
+			left, ok := leftValue.(bool)
+			if !ok {
+				return nil, fmt.Errorf("参数类型错误 期待bool值")
+			}
+			right, ok := rightValue.(bool)
+			if !ok {
+				return nil, fmt.Errorf("参数类型错误 期待bool值")
+			}
+			return left && right, nil
 
 		default:
 			panic(fmt.Errorf("中缀表达式: %s 不支持%s 操作符", express.String(), express.Operator))

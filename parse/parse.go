@@ -31,6 +31,8 @@ var tokenPrecedenceMap = map[token.TokenType]int{
 	token.LESSOREQUALS:    LOGIC,
 	token.GREATER:         LOGIC,
 	token.GREATEROREQUALS: LOGIC,
+	token.LOGICALAND:      LOGIC,
+	token.LOGICALOR:       LOGIC,
 	token.LPAREN:          CALL,
 	token.LBRACKET:        INDEX,
 }
@@ -80,13 +82,15 @@ func New(l *lexer.Lexer) *Parser {
 	parse.registerInfixExpr(token.DIV, parse.paresInfixExprssion)
 	parse.registerInfixExpr(token.MOD, parse.paresInfixExprssion)
 
-	// > < >= <= == !=
+	// > < >= <= == != || &&
 	parse.registerInfixExpr(token.EQUALS, parse.paresInfixExprssion)
 	parse.registerInfixExpr(token.NOTEQUALS, parse.paresInfixExprssion)
 	parse.registerInfixExpr(token.LESS, parse.paresInfixExprssion)
 	parse.registerInfixExpr(token.LESSOREQUALS, parse.paresInfixExprssion)
 	parse.registerInfixExpr(token.GREATER, parse.paresInfixExprssion)
 	parse.registerInfixExpr(token.GREATEROREQUALS, parse.paresInfixExprssion)
+	parse.registerInfixExpr(token.LOGICALAND, parse.paresInfixExprssion)
+	parse.registerInfixExpr(token.LOGICALOR, parse.paresInfixExprssion)
 
 	// ( 说明是函数调用 当做中缀表达式的时候 注意 优先级  如果调用到中缀 说明前面肯定有其他前缀表达式 这个时候 他应该是比前缀表达式的优先级还高
 	// 否则 对于+add() 会处理错误
