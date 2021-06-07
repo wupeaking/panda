@@ -7,23 +7,30 @@ import (
 	"panda/lexer"
 	"panda/parse"
 	"panda/repl"
-	"strings"
 )
 
 var debug = true
 
 func main() {
-	if debug {
-		lex := lexer.New(strings.NewReader(`
-		var a = [1, 2, [3, 1, 2]];
-		println(a[2][1]);
-		`))
+	if len(os.Args) > 1 {
+		file, err := os.Open(os.Args[1])
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+		lex := lexer.New(file)
 		p := parse.New(lex)
 		inter := eval.New(p)
 		v, err := inter.Eval()
-		fmt.Fprintf(os.Stdout, " %v %v\n", v, err)
+		if err != nil {
+			panic(err)
+		}
+		if v != nil {
+			fmt.Printf("%v\n", v)
+		}
+	} else {
+		repl.StartREPL(os.Stdin, os.Stdout)
 	}
-	repl.StartREPL(os.Stdin, os.Stdout)
 }
 
 /*
