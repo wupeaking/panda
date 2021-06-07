@@ -248,6 +248,9 @@ func (inter *Interpreter) evalExpress(exp ast.Expression) (interface{}, error) {
 	case *ast.ArrayExpression:
 		return inter.evalArrayExpression(express)
 
+	case *ast.MapExpression:
+		return inter.evalMapExpression(express)
+
 	case *ast.IndexExpression:
 		return inter.evalIndexExpression(express)
 
@@ -358,26 +361,49 @@ func (inter *Interpreter) evalIndexExpression(index *ast.IndexExpression) (inter
 	}
 	retValue := IndexValue{}
 	retValue.Name = index.Name
-	arr, ok := value.([]interface{})
-	// todo:: 暂时只支持数组
-	if !ok {
-		return nil, fmt.Errorf("返回类型不能进行索引")
-	}
-	arrIndex, err := inter.evalExpress(index.Index)
-	if err != nil {
-		return nil, err
-	}
-	arrI, ok := arrIndex.(int64)
-	// todo:: 暂时只支持数组的索引
-	if !ok {
-		return nil, fmt.Errorf("数组的索引必须是整数")
-	}
-	if int(arrI) >= len(arr) {
-		return nil, fmt.Errorf("数组索引超出范围")
-	}
 
-	retValue.Index = arrI
-	retValue.Value = arr[arrI]
-	_ = retValue
-	return arr[arrI], nil
+	switch arrOrMap := value.(type) {
+	case []interface{}:
+		arrIndex, err := inter.evalExpress(index.Index)
+		if err != nil {
+			return nil, err
+		}
+		arrI, ok := arrIndex.(int64)
+		if !ok {
+			return nil, fmt.Errorf("数组的索引必须是整数")
+		}
+		if int(arrI) >= len(arrOrMap) {
+			return nil, fmt.Errorf("数组索引超出范围")
+		}
+		return arrOrMap[arrI], nil
+	case map[interface{}]interface{}:
+		arrIndex, err := inter.evalExpress(index.Index)
+		if err != nil {
+			return nil, err
+		}
+		return arrOrMap[arrIndex], nil
+	default:
+		return nil, fmt.Errorf("参数类型错误 只支持map和数组的索引")
+	}
+}
+
+func (inter *Interpreter) evalMapExpression(mapExp *ast.MapExpression) (map[interface{}]interface{}, error) {
+	ret := make(map[interface{}]interface{})
+	for k, v := range mapExp.KV {
+		keyI, err := inter.evalExpress(k)
+		if err != nil {
+			return nil, err
+		}
+		valueI, err := inter.evalExpress(v)
+		if err != nil {
+			return nil, err
+		}
+		switch keyI.(type) {
+		case int64, float64, int, bool, string:
+			ret[keyI] = valueI
+		default:
+			return nil, fmt.Errorf("map类型key值只支持基本类型")
+		}
+	}
+	return ret, nil
 }

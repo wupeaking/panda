@@ -41,7 +41,8 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			if c.Args().Len() > 1 {
+			println(c.Args().First())
+			if c.Args().Len() == 1 {
 				file, err := os.Open(c.Args().First())
 				if err != nil {
 					return err

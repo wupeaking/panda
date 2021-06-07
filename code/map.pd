@@ -3,3 +3,5 @@ var a = {
     "age" : 10+20,
     "sex": true
 };
+println(a["sex"]);
+println(a["age"]);
