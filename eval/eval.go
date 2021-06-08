@@ -90,20 +90,7 @@ func (inter *Interpreter) evalStatement(stmt ast.Statement) (interface{}, error)
 			inter.scopeManager.SetValue(statement.Name.Value, nil, true)
 		}
 	case *ast.AssginStatement:
-		// 判断变量是否存在
-		// _, ok := VarMap[statement.Name.Value]
-		if !inter.scopeManager.VarExists(statement.Name.Value) {
-			return nil, fmt.Errorf("变量%s未定义", statement.Name.Value)
-		}
-		v, err := inter.evalExpress(statement.Value)
-		if err != nil {
-			return nil, err
-		}
-		//VarMap[statement.Name.Value] = v
-		ok := inter.scopeManager.SetValue(statement.Name.Value, v, false)
-		if !ok {
-			return nil, fmt.Errorf("变量%s不存在", statement.Name.Value)
-		}
+		return inter.evalAssginStatement(statement)
 
 	case *ast.ExpressStatement:
 		_, err := inter.evalExpress(statement.Expression)

@@ -78,6 +78,51 @@ func (p *Parser) parseAssginStatement() *ast.AssginStatement {
 	return &assginStmt
 }
 
+// parseIndexAssginStatement 解析索引赋值语句
+// a[0] = xxx
+// a["aaaa"] = xxx
+func (p *Parser) parseIndexAssginStatement() *ast.AssginStatement {
+	assginStmt := ast.AssginStatement{}
+	idToken := p.curToken
+	p.forwardToken() // [
+	assginStmt.Name = &ast.IdentifierExpression{
+		Token: idToken,
+		Value: idToken.Literal,
+	}
+	p.forwardToken()
+	assginStmt.Index = p.ParseExpression(LOWEST)
+	p.forwardToken() // ]
+	if !p.curTokenIs(token.RBRACKET) {
+		p.errs = append(p.errs,
+			fmt.Errorf("期待一个] 在line: %d, pos: %d",
+				p.curToken.Line, p.curToken.Position,
+			),
+		)
+		return nil
+	}
+	if !p.nextTokenIs(token.ASSIGN) {
+		p.errs = append(p.errs,
+			fmt.Errorf("期待一个等号在line: %d, pos: %d",
+				p.curToken.Line, p.curToken.Position,
+			),
+		)
+		return nil
+	}
+	p.forwardToken() // =
+	p.forwardToken()
+	assginStmt.Value = p.ParseExpression(LOWEST)
+	if !p.nextTokenIs(token.SEMI) {
+		p.errs = append(p.errs,
+			fmt.Errorf("期待一个分号在line: %d, pos: %d",
+				p.curToken.Line, p.curToken.Position,
+			),
+		)
+		return nil
+	}
+	p.forwardToken() // ;
+	return &assginStmt
+}
+
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	retStmt := ast.ReturnStatement{}
 	retStmt.Token = p.curToken

@@ -63,6 +63,7 @@ func New(l *lexer.Lexer) *Parser {
 	// str
 	parse.registerPrefixExpr(token.STRING, parse.parseString)
 	parse.registerPrefixExpr(token.TRUE, parse.parseBool)
+	parse.registerPrefixExpr(token.FALSE, parse.parseBool)
 	// + - 可以做前缀
 	parse.registerPrefixExpr(token.PLUS, parse.paresPrefixExprssion)
 	parse.registerPrefixExpr(token.MINUS, parse.paresPrefixExprssion)
@@ -157,8 +158,11 @@ func (p *Parser) parserASTNode() ast.Node {
 
 	case token.IDENTIFIER:
 		if p.nextTokenIs(token.ASSIGN) {
-			// todo:: 后面支持 数组和map的赋值
 			return p.parseAssginStatement()
+		}
+		if p.nextTokenIs(token.LBRACKET) {
+			// 数组或者map赋值
+			return p.parseIndexAssginStatement()
 		}
 		fallthrough
 	default:

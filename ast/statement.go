@@ -52,6 +52,7 @@ func (vs *VarStatement) String() string {
 type AssginStatement struct {
 	Token token.Token
 	Name  *IdentifierExpression
+	Index Expression // 如果不为空 表示数组或者map索引赋值
 	Value Expression
 }
 
@@ -61,6 +62,11 @@ func (as *AssginStatement) String() string {
 	var out bytes.Buffer
 	out.WriteString("(")
 	out.WriteString(as.Name.TokenLiteral())
+	if as.Index != nil {
+		out.WriteString("[")
+		out.WriteString(as.Index.String())
+		out.WriteString("]")
+	}
 	out.WriteString(" = ")
 	out.WriteString(as.Value.String())
 	out.WriteString(")")

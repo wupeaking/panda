@@ -1,0 +1,27 @@
+var a = [1, 2, [3, 1, 2]];
+var b = {
+    "name": "wpx",
+    "age" : 10+20,
+    "sex": true
+};
+
+for(var i = 0; i < len(a); i=i+1) {
+    if(i==2) {
+        println("a=", a[i][1]);
+    }else{
+        println("a=", a[i]);
+    }
+}
+println(b["age"]);
+a[0] = 333;
+b["age"] = 31;
+b["address"] = "address";
+for(var i = 0; i < len(a); i=i+1) {
+    if(i==2) {
+        println("a=", a[i][1]);
+    }else{
+        println("a=", a[i]);
+    }
+}
+println(b["age"]);
+println(b["address"]);
