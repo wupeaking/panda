@@ -1,6 +1,9 @@
 package ast
 
-import "panda/token"
+import (
+	"fmt"
+	"panda/token"
+)
 
 // 数字表达式
 type NumberExpression struct {
@@ -37,4 +40,26 @@ func (be *BoolExpression) TokenLiteral() string { return be.Token.Literal }
 
 func (be *BoolExpression) String() string {
 	return be.Token.Literal
+}
+
+type AddessExpression struct {
+	Token token.Token
+	Value string // 实际的地址
+}
+
+func (ide *AddessExpression) ExpressionNode()      {}
+func (ide *AddessExpression) TokenLiteral() string { return ide.Token.Literal }
+func (ide *AddessExpression) String() string {
+	return ide.Token.Literal
+}
+
+type ThisExpression struct {
+	Token token.Token
+	Value string // 指向当前合约地址
+}
+
+func (te *ThisExpression) ExpressionNode()      {}
+func (te *ThisExpression) TokenLiteral() string { return te.Token.Literal }
+func (te *ThisExpression) String() string {
+	return te.Token.Literal + fmt.Sprintf("(%s)", te.Value)
 }

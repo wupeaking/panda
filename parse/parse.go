@@ -137,6 +137,11 @@ func (p *Parser) parserASTNode() ast.Node {
 	case token.VAR:
 		// 解析声明表达式
 		return p.parseVarStatement()
+
+	case token.STORAGE:
+		// storage 声明的变量 会被持久化存储
+		return p.parseStorageStatement()
+
 	case token.RETURN:
 		// return 语句
 		return p.parseReturnStatement()

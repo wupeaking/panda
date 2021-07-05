@@ -25,7 +25,9 @@ const (
 	LIST
 	TRUE
 	FALSE
-
+	STORAGE
+	ADDRESS
+	THIS
 	// 标识符
 	IDENTIFIER
 
@@ -102,6 +104,9 @@ var TokenTypeLiteral = map[TokenType]string{
 	LIST:       "list",
 	TRUE:       "true",
 	FALSE:      "false",
+	STORAGE:    "storage",
+	ADDRESS:    "address",
+	THIS:       "this",
 	IDENTIFIER: "IDENTIFIER",
 	// 标点
 	LPAREN:   "(",
@@ -171,7 +176,9 @@ var LiteralTokenType = map[string]TokenType{
 	"list":     LIST,
 	"true":     TRUE,
 	"false":    FALSE,
-
+	"storage":  STORAGE,
+	"address":  ADDRESS,
+	"this":     THIS,
 	// 标点
 	"(": LPAREN,
 	")": RPAREN,

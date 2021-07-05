@@ -141,3 +141,20 @@ func (bk *BreakStatement) String() string {
 	out.WriteString("break;")
 	return out.String()
 }
+
+type StorageStatement struct {
+	Token token.Token
+	Name  *IdentifierExpression
+	Value Expression
+}
+
+func (ss *StorageStatement) StatementNode()       {}
+func (ss *StorageStatement) TokenLiteral() string { return ss.Token.Literal }
+func (ss *StorageStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString(ss.Token.Literal + " " + ss.Name.String())
+	if ss.Value != nil {
+		out.WriteString(" = " + ss.Value.String())
+	}
+	return out.String()
+}
